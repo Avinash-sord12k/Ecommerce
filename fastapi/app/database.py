@@ -72,6 +72,8 @@ class DatabaseManager:
         if args is None:
             args = []
 
+
+
         await self.cursor.execute(query, args)
 
         return await self.cursor.fetchall()
