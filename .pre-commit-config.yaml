@@ -6,21 +6,10 @@ repos:
       - id: check-yaml
       - id: requirements-txt-fixer
 
-  - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.5.0
-    hooks:
-      - id: setup-cfg-fmt
-
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v3.1.0
     hooks:
       - id: add-trailing-comma
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
-    hooks:
-      - id: pyupgrade
-        args: [--py39-plus]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
