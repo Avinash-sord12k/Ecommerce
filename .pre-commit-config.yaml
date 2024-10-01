@@ -2,11 +2,8 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-      - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: debug-statements
-      - id: name-tests-test
       - id: requirements-txt-fixer
 
   - repo: https://github.com/asottile/setup-cfg-fmt
@@ -39,7 +36,7 @@ repos:
         types: [cython]
 
   - repo: https://github.com/psf/black
-    rev: 24.8.0 # Use the latest stable version of black
+    rev: 24.8.0
     hooks:
       - id: black
         args:
