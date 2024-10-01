@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from asyncpg import create_pool
 from loguru import logger
 from sqlalchemy.engine import create_engine
@@ -8,14 +10,14 @@ class DatabaseManager:
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(DatabaseManager, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, host, port, user, password, database, base):
         if hasattr(self, "initialized"):
-            error_message = "DatabaseManager is a singleton class and cannot be initialized"
-            logger.error(error_message)
-            raise Exception(error_message)
+            err_msg = "DatabaseManager is a singleton class"
+            logger.error(err_msg)
+            raise Exception(err_msg)
 
         self.host = host
         self.port = port
@@ -31,7 +33,14 @@ class DatabaseManager:
         base.metadata.create_all(self.engine)
 
     def get_url(self):
-        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return (
+            f"postgresql://"
+            f"{self.user}:"
+            f"{self.password}@"
+            f"{self.host}:"
+            f"{self.port}/"
+            f"{self.database}"
+        )
 
     async def connect(self):
         self.pool = await create_pool(
@@ -71,15 +80,5 @@ class DatabaseManager:
     async def fetchall(self, query, args=None):
         if args is None:
             args = []
-
-
-
-
-
-
-
-
-
         await self.cursor.execute(query, args)
-
         return await self.cursor.fetchall()

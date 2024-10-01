@@ -1,9 +1,12 @@
-from loguru import logger
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from __future__ import annotations
 
 from app.users.models import UserCreate
 from app.users.repository import UserRepository
-from fastapi import APIRouter, HTTPException
+from loguru import logger
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+
+from fastapi import APIRouter
+from fastapi import HTTPException
 
 router = APIRouter()
 
@@ -17,7 +20,10 @@ async def create_user(user: UserCreate):
         return user
     except Exception as e:
         logger.error(f"Error creating user: {e}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        )
 
 
 @router.get("/users/{user_id}", response_model=UserCreate)

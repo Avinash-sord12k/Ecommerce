@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
 
-from loguru import logger
-
-from app.config import APP_CONFIGS, DB_CONFIGS
+from app.config import APP_CONFIGS
+from app.config import DB_CONFIGS
 from app.database import DatabaseManager
 from app.users.router import router as users_router
+from loguru import logger
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -46,7 +49,11 @@ app.add_middleware(
     allow_headers=APP_CONFIGS["allow_headers"],
 )
 
-app.get("/api/v1/welcome", response_model=str, response_model_exclude_unset=True)(lambda: "Welcome to FastAPI v1")
+app.get(
+    "/api/v1/welcome",
+    response_model=str,
+    response_model_exclude_unset=True,
+)(lambda: "Welcome to FastAPI v1")
 
 # Routers
 app.include_router(users_router, prefix="/api/v1/users", tags=["users"])

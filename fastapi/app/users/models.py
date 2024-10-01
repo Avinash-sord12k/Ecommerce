@@ -1,22 +1,26 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Optional
 
+from app.config import Base
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
-
-from app.config import DB_CONFIGS
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
 
 
 class UserCreate(BaseModel):
     username: str
     email: str
     password: str
-    full_name: Optional[str] = ""
-    phone: Optional[str] = ""
-    address: Optional[str] = ""
+    full_name: str | None = ""
+    phone: str | None = ""
+    address: str | None = ""
 
 
-class User(DB_CONFIGS["Base"]):
+class User(Base):
     __tablename__ = "users"
 
     id: int = Column(Integer, primary_key=True, autoincrement=True)
@@ -30,4 +34,8 @@ class User(DB_CONFIGS["Base"]):
     superuser: bool = Column(Boolean, default=False)
     internal_user: bool = Column(Boolean, default=False)
     date_joined: datetime = Column(DateTime, default=datetime.utcnow)
-    last_active: datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_active: datetime = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )

@@ -1,7 +1,8 @@
-from sqlalchemy import select
+from __future__ import annotations
 
 from app.database import DatabaseManager
 from app.users.models import User
+from sqlalchemy import select
 
 
 class UserRepository:
@@ -25,10 +26,14 @@ class UserRepository:
 
     async def get_by_id(self, user_id: int):
         async with self.db.pool.acquire() as connection:
-            result = await connection.fetch(select(User).where(User.id == user_id))
+            result = await connection.fetch(
+                select(User).where(User.id == user_id),
+            )
             return result[0]
 
     async def get_by_username(self, username: str):
         async with self.db.pool.acquire() as connection:
-            result = await connection.fetch(select(User).where(User.username == username))
+            result = await connection.fetch(
+                select(User).where(User.username == username),
+            )
             return result[0]

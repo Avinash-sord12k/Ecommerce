@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -16,5 +18,6 @@ DB_CONFIGS = {
     "user": os.getenv("DB_USER", "postgres"),
     "password": os.getenv("DB_PASSWORD", "postgres"),
     "database": os.getenv("DB_DATABASE", "postgres"),
-    "Base": declarative_base(),
 }
+
+Base = declarative_base()

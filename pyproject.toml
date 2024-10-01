@@ -27,7 +27,7 @@ venv = "venv"
 typeCheckingMode = "off"
 
 [tool.ruff]
-line-length = 120
+line-length = 79
 exclude = [
     ".bzr",
     ".direnv",
@@ -47,3 +47,6 @@ exclude = [
     "site-packages",
     "venv",
 ]
+
+[tool.black]
+line-length = 79
