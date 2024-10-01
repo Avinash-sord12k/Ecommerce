@@ -77,6 +77,9 @@ class DatabaseManager:
 
 
 
+
+
+
         await self.cursor.execute(query, args)
 
         return await self.cursor.fetchall()
