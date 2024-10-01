@@ -1,8 +1,9 @@
 repos:
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.13.2 # Use the latest stable version of isort
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
     hooks:
       - id: isort
+        name: isort (python)
         files: \.py$ # Only run on Python files
         exclude: "" # Ensure no manual exclusions that override gitignore
 
