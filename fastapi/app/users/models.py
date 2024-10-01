@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from app.config import Base
 from pydantic import BaseModel
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import Integer
-from sqlalchemy import String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
+
+from app.config import Base
 
 
 class UserCreate(BaseModel):

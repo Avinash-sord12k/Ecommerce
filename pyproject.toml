@@ -50,3 +50,7 @@ exclude = [
 
 [tool.black]
 line-length = 79
+
+[tool.isort]
+known_third_party = ["fastapi"]
+known_first_party = ["app"]

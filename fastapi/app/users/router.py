@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from app.users.models import UserCreate
-from app.users.repository import UserRepository
+from fastapi import APIRouter, HTTPException
 from loguru import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-from fastapi import APIRouter
-from fastapi import HTTPException
+from app.users.models import UserCreate
+from app.users.repository import UserRepository
 
 router = APIRouter()
 

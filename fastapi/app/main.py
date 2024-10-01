@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from app.config import APP_CONFIGS
-from app.config import DB_CONFIGS
-from app.database import DatabaseManager
-from app.users.router import router as users_router
-from loguru import logger
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
+
+from app.config import APP_CONFIGS, DB_CONFIGS
+from app.database import DatabaseManager
+from app.users.router import router as users_router
 
 database_manager = DatabaseManager(
     host=DB_CONFIGS["host"],
