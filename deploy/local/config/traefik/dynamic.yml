@@ -1,0 +1,36 @@
+http:
+  routers:
+    fastapi-router:
+      rule: Host(`fastapi.docker.localhost`)
+      service: fastapi-service
+      middlewares:
+        - rate-limit-middleware
+
+    pgadmin-router:
+      rule: Host(`pgadmin.docker.localhost`)
+      service: pgadmin-service
+      middlewares:
+        - basic-login-pass-middleware
+
+  middlewares:
+    rate-limit-middleware:
+      rateLimit:
+        average: 10
+        period: 10s
+        burst: 3
+
+    basic-login-pass-middleware:
+      basicAuth:
+        users:
+          - "admin:$2a$12$rpB.7eUBJIIQX6fAQYSYxO/CFMRdcNO5nSnFojL4sIYKfT77Oo/m6"
+
+  services:
+    fastapi-service:
+      loadBalancer:
+        servers:
+          - url: http://fastapi:5000
+
+    pgadmin-service:
+      loadBalancer:
+        servers:
+          - url: http://pgadmin:80

@@ -1,0 +1,21 @@
+entryPoints:
+  web:
+    address: :80
+    http3: {}
+  websecure:
+    address: :443
+    http3: {}
+
+providers:
+  file:
+    filename: dynamic.yml
+    watch: true
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+
+log:
+  level: INFO
+
+api:
+  dashboard: true
+  insecure: true

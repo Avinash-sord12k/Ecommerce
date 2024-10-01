@@ -1,0 +1,32 @@
+# Ignore Python-related files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment
+venv/
+
+# Ignore and db file
+*.db
+
+# Ignore FastAPI configuration files
+alembic/
+migrations/
+alembic.ini
+
+# Ignore Docker-related files
+.dockerignore
+Dockerfile
+
+# Ignore editor-related files
+.vscode/
+.idea/
+
+# Ignore other unnecessary files
+Thumbs.db
+.DS_Store
+
+# Ignore all environment files
+.env
+.env.*

@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.13.2 # Use the latest stable version of isort
+    hooks:
+      - id: isort
+        files: \.py$ # Only run on Python files
+        exclude: "" # Ensure no manual exclusions that override gitignore
+
+  - repo: https://github.com/psf/black
+    rev: 24.8.0 # Use the latest stable version of black
+    hooks:
+      - id: black
+        files: \.py$ # Only run on Python files
+        language_version: python3 # or specify your Python version
+        exclude: "" # Ensure no manual exclusions that override gitignore
