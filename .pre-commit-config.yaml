@@ -11,5 +11,7 @@ repos:
     hooks:
       - id: black
         name: black (python)
+        args:
+          - "--safe"
         language_version: python3 # or specify your Python version
         exclude: "" # Ensure no manual exclusions that override gitignore
