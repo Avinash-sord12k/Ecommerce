@@ -6,15 +6,11 @@ repos:
       - id: check-yaml
       - id: requirements-txt-fixer
 
-  - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.1.0
-    hooks:
-      - id: add-trailing-comma
-
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
+        args: ["--profile", "black", "--filter-files", "--line-length=79"]
 
   - repo: https://github.com/psf/black
     rev: 24.8.0
@@ -22,8 +18,3 @@ repos:
       - id: black
         args:
           - "--safe"
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8

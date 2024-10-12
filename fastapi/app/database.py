@@ -1,8 +1,7 @@
-from __future__ import annotations
-
-from asyncpg import create_pool
 from loguru import logger
-from sqlalchemy.engine import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.config import DB_CONFIGS, Base
 
 
 class DatabaseManager:
@@ -13,28 +12,23 @@ class DatabaseManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, host, port, user, password, database, base):
+    def __init__(self, host, port, user, password, database):
         if hasattr(self, "initialized"):
             err_msg = "DatabaseManager is a singleton class"
             logger.error(err_msg)
             raise Exception(err_msg)
 
-        self.host = host
-        self.port = port
         self.user = user
         self.password = password
+        self.host = host
+        self.port = port
         self.database = database
-        self.pool = None
-        self.connection = None
-        self.cursor = None
-        self.transaction = None
         self.initialized = True
-        self.engine = create_engine(self.get_url(), future=True)
-        base.metadata.create_all(self.engine)
+        self.engine = None
 
     def get_url(self):
         return (
-            f"postgresql://"
+            f"postgresql+asyncpg://"
             f"{self.user}:"
             f"{self.password}@"
             f"{self.host}:"
@@ -43,42 +37,11 @@ class DatabaseManager:
         )
 
     async def connect(self):
-        self.pool = await create_pool(
-            host=self.host,
-            port=self.port,
-            user=self.user,
-            password=self.password,
-            database=self.database,
+        self.engine = create_async_engine(
+            self.get_url(), pool_size=DB_CONFIGS["pool_size"]
         )
-        async with self.pool.acquire() as connection:
-            result = await connection.fetch("SELECT NOW();")
-            logger.info(f"Current date and time: {result[0]['now']}")
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
 
     async def disconnect(self):
-        if self.transaction is not None:
-            logger.debug("Rolling back transaction")
-            await self.transaction.rollback()
-        if self.connection is not None:
-            logger.debug("Closing connection")
-            await self.connection.close()
-        if self.pool is not None:
-            logger.debug("Closing pool")
-            await self.pool.close()
-
-    async def execute(self, query, args=None):
-        if args is None:
-            args = []
-        await self.cursor.execute(query, args)
-        await self.connection.commit()
-
-    async def fetchone(self, query, args=None):
-        if args is None:
-            args = []
-        await self.cursor.execute(query, args)
-        return await self.cursor.fetchone()
-
-    async def fetchall(self, query, args=None):
-        if args is None:
-            args = []
-        await self.cursor.execute(query, args)
-        return await self.cursor.fetchall()
+        await self.engine.dispose()
