@@ -1,6 +1,7 @@
-import jwt
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import (
     ExpiredSignatureError,
     InvalidSignatureError,
@@ -15,14 +16,11 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.config import HASHING_ALGORITHM, SECRET_KEY
-from app.users.models import UserCreate, UserLoginResponse, UserRead
 from app.users.repository import UserRepository
-from app.users.utils import create_access_token
+from app.users.schema import UserCreate, UserLoginResponse, UserRead
+from app.users.utils import create_access_token, get_user_id_from_token
 
 router = APIRouter()
-
-oauth2scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
 
 
 @router.post("/register", response_model=UserRead)
@@ -56,7 +54,9 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
             )
 
         encode_payload = {"user_id": user.id, "email": user.email}
-        token = create_access_token(data=encode_payload)
+        token = create_access_token(
+            data=encode_payload, expires_delta=timedelta(seconds=5)
+        )
         return UserLoginResponse(access_token=token)
     except HTTPException as e:
         logger.exception(f"Error logging in user: {e=}")
@@ -70,14 +70,9 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/me", response_model=UserRead)
-async def get_user_me(token: str = Depends(oauth2scheme)):
+async def get_user_me(user_id: int = Depends(get_user_id_from_token)):
     try:
-        token_payload = jwt.decode(
-            token, SECRET_KEY, algorithms=[HASHING_ALGORITHM]
-        )
-
         user_repo = UserRepository()
-        user_id = token_payload["user_id"]
         if not (user := await user_repo.get_by_id(user_id)):
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND, detail="User not found"

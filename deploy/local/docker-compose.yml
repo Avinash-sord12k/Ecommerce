@@ -14,7 +14,7 @@ services:
       - main-network
 
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -49,6 +49,8 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
+    volumes:
+      - /home/x/Projects/Authentication/fastapi/app:/home/appuser/app # TODO: Remove this line
     depends_on:
       - postgres
       - traefik
