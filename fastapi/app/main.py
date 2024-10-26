@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from app.config import APP_CONFIGS, DB_CONFIGS
 from app.database import DatabaseManager
+from app.products.router import router as product_router
 from app.users.router import router as users_router
 
 database_manager = DatabaseManager(
@@ -83,4 +84,5 @@ app.get(
 )(lambda: "Welcome to FastAPI v1")
 
 # Routers
-app.include_router(users_router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(router=users_router)
+app.include_router(router=product_router)

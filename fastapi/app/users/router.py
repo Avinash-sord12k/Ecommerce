@@ -20,7 +20,7 @@ from app.users.repository import UserRepository
 from app.users.schema import UserCreate, UserLoginResponse, UserRead
 from app.users.utils import create_access_token, get_user_id_from_token
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
 @router.post("/register", response_model=UserRead)
