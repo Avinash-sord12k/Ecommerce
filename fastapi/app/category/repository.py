@@ -1,10 +1,10 @@
 from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError
 
-from app.category.models import Category
-from app.category.schema import (
-    AllCategoriesResponseSchema,
-    CategoryCreateSchema,
+from app.category.schema import Category
+from app.category.models import (
+    AllCategoriesResponseModel,
+    CategoryCreateModel,
 )
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
@@ -14,7 +14,7 @@ class ProductCategoryRepository:
     def __init__(self) -> None:
         self.db = DatabaseManager._instance
 
-    async def create(self, category: CategoryCreateSchema):
+    async def create(self, category: CategoryCreateModel):
         async with self.db.engine.begin() as connection:
             try:
                 result = await connection.execute(insert(Category).values(name=category.name))
@@ -35,11 +35,11 @@ class ProductCategoryRepository:
 
             return category._asdict()
 
-    async def get_all(self) -> AllCategoriesResponseSchema:
+    async def get_all(self) -> AllCategoriesResponseModel:
         async with self.db.engine.begin() as connection:
             result = await connection.execute(select(Category))
             categories = result.fetchall()
-            return AllCategoriesResponseSchema(
+            return AllCategoriesResponseModel(
                 categories=[{"id": category.id, "name": category.name} for category in categories]
             )
 

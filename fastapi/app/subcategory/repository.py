@@ -3,11 +3,11 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
-from app.category.models import Category
-from app.subcategory.models import SubCategory
-from app.subcategory.schema import (
-    AllSubCategoriesResponseSchema,
-    SubCategoryCreateSchema,
+from app.category.schema import Category
+from app.subcategory.schema import SubCategory
+from app.subcategory.models import (
+    AllSubCategoriesResponseModel,
+    SubCategoryCreateModel,
 )
 
 
@@ -15,7 +15,7 @@ class ProductSubCategoryRepository:
     def __init__(self) -> None:
         self.db = DatabaseManager._instance
 
-    async def create(self, sub_category: SubCategoryCreateSchema):
+    async def create(self, sub_category: SubCategoryCreateModel):
         async with self.db.engine.begin() as connection:
             try:
                 # check if the category exists
@@ -51,11 +51,11 @@ class ProductSubCategoryRepository:
 
             return sub_category._asdict()
 
-    async def get_all(self) -> AllSubCategoriesResponseSchema:
+    async def get_all(self) -> AllSubCategoriesResponseModel:
         async with self.db.engine.begin() as connection:
             result = await connection.execute(select(SubCategory))
             sub_categories = result.fetchall()
-            return AllSubCategoriesResponseSchema(
+            return AllSubCategoriesResponseModel(
                 sub_categories=[
                     {
                         "id": sub_category.id,

@@ -10,7 +10,7 @@ from starlette.status import (
 )
 
 from app.category.repository import ProductCategoryRepository
-from app.category.schema import CategoryCreateSchema, CategoryResponseSchema, AllCategoriesResponseSchema
+from app.category.models import CategoryCreateModel, CategoryResponseModel, AllCategoriesResponseModel
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
 
 @router.post(
     "/create",
-    response_model=CategoryResponseSchema,
+    response_model=CategoryResponseModel,
     status_code=HTTP_201_CREATED,
     responses={
         400: {
@@ -27,11 +27,11 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
         }
     },
 )
-async def create_category(category: CategoryCreateSchema):
+async def create_category(category: CategoryCreateModel):
     try:
         repo = ProductCategoryRepository()
         new_category = await repo.create(category)
-        return CategoryResponseSchema.model_validate(new_category)
+        return CategoryResponseModel.model_validate(new_category)
     except EntityIntegrityError as e:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -39,7 +39,7 @@ async def create_category(category: CategoryCreateSchema):
         )
 
 
-@router.get("/get_by_id/{id}", response_model=CategoryResponseSchema, status_code=HTTP_200_OK)
+@router.get("/get-by-id/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK)
 async def get_category_by_id(id: int):
     try:
         repo = ProductCategoryRepository()
@@ -54,7 +54,7 @@ async def get_category_by_id(id: int):
 
 @router.get(
     "/get-all",
-    response_model=AllCategoriesResponseSchema,
+    response_model=AllCategoriesResponseModel,
     status_code=HTTP_200_OK,
     responses={
         404: {
@@ -80,7 +80,7 @@ async def get_category():
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{id}", response_model=CategoryResponseSchema, status_code=HTTP_200_OK)
+@router.delete("/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK)
 async def delete_category(id: int):
     if not isinstance(id, int):
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid ID")

@@ -20,22 +20,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
       - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - main-network
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    volumes:
-      - ./data/pgadmin:/var/lib/pgadmin
-    depends_on:
-      - postgres
     networks:
       - main-network
 
@@ -49,6 +38,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
       PYTHONPATH: /home/appuser/
+      SHARED_FOLDER: ${SHARED_FOLDER}
       TESTMODE: True
     volumes:
       - ./data/fastapi/shared:/home/appuser/shared

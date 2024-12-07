@@ -2,5 +2,5 @@
 
 cd ./deploy/local
 
-docker compose -f test.compose.yml up \
+docker compose -f test.docker-compose.yml up \
     --remove-orphans

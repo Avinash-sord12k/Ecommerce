@@ -14,6 +14,7 @@ from app.config import APP_CONFIGS, SHARED_FOLDER
 from app.database import DatabaseManager
 from app.subcategory.router import router as subcategory_router
 from app.users.router import router as users_router
+from app.products.router import router as products_router
 
 
 @asynccontextmanager
@@ -75,3 +76,4 @@ app.get(
 app.include_router(router=users_router)
 app.include_router(router=category_router)
 app.include_router(router=subcategory_router)
+app.include_router(router=products_router)

@@ -1,18 +1,14 @@
-from typing import List
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
-from pydantic import BaseModel, ConfigDict, Field
-
-
-class CategoryCreateSchema(BaseModel):
-    name: str = Field(..., max_length=50, description="Name of the category")
-    model_config = ConfigDict(from_attributes=True)
+from app.config import Base
 
 
-class CategoryResponseSchema(BaseModel):
-    id: int = Field(..., description="ID of the category")
-    name: str = Field(..., max_length=50, description="Name of the category")
-    model_config = ConfigDict(from_attributes=True)
+class Category(Base):
+    __tablename__ = "categories"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), unique=True, nullable=False)
 
-class AllCategoriesResponseSchema(BaseModel):
-    categories: List[CategoryResponseSchema]
+    # One-to-many relationship with SubCategory
+    sub_categories = relationship("SubCategory", back_populates="category", cascade="all, delete-orphan")

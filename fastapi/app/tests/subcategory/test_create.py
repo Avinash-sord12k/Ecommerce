@@ -1,11 +1,18 @@
 import pytest
 from httpx import AsyncClient
 from loguru import logger
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_404_NOT_FOUND,
+    HTTP_400_BAD_REQUEST,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category(client: AsyncClient, category_data: dict, sub_category_data: dict):
+    # Create category
     response = await client.post("/api/v1/category/create", json=category_data)
     response_json = response.json()
     logger.debug(response_json)
@@ -13,6 +20,8 @@ async def test_create_sub_category(client: AsyncClient, category_data: dict, sub
     assert response_json["name"] == category_data["name"]
 
     category_id = response_json["id"]
+
+    # Create subcategory
     sub_category_data["category_id"] = category_id
     response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
     response_json = response.json()
@@ -21,13 +30,102 @@ async def test_create_sub_category(client: AsyncClient, category_data: dict, sub
     assert response_json["name"] == sub_category_data["name"]
 
     subcategory_id = response_json["id"]
-    logger.debug(f"{subcategory_id=}")
+
+    # Delete subcategory
+    response = await client.delete(f"/api/v1/subcategory/{subcategory_id}")
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == subcategory_id
+
+    # Delete category
+    response = await client.delete(f"/api/v1/category/{category_id}")
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == category_id
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_create_sub_category_with_nonexistent_category(client: AsyncClient, sub_category_data: dict):
+    nonexistent_category_id = 99999  # Assuming 99999 doesn't exist
+    sub_category_data["category_id"] = nonexistent_category_id
+    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_create_sub_category_with_invalid_category_id(client: AsyncClient, sub_category_data: dict):
+    invalid_category_id = "invalid_id"
+    sub_category_data["category_id"] = invalid_category_id
+    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_create_sub_category_without_required_fields(client: AsyncClient, category_data: dict):
+    # Create category first
+    response = await client.post("/api/v1/category/create", json=category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_201_CREATED
+    assert response_json["name"] == category_data["name"]
+
+    category_id = response_json["id"]
+
+    # Try to create subcategory without a name (missing required field)
+    sub_category_data = {"category_id": category_id}  # Missing 'name' field
+    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+
+    # delete category
+    response = await client.delete(f"/api/v1/category/{category_id}")
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == category_id
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_create_sub_category_with_duplicate_name(
+    client: AsyncClient, category_data: dict, sub_category_data: dict
+):
+    # Create category
+    response = await client.post("/api/v1/category/create", json=category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_201_CREATED
+    assert response_json["name"] == category_data["name"]
+
+    category_id = response_json["id"]
+
+    # Create the first subcategory
+    sub_category_data["category_id"] = category_id
+    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_201_CREATED
+    assert response_json["name"] == sub_category_data["name"]
+
+    # Try to create a subcategory with the same name under the same category
+    subcategory_id = response_json["id"]
+    sub_category_data["name"] = sub_category_data["name"]  # Same name
+    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_400_BAD_REQUEST
+
+    # delete subcategory
     response = await client.delete(f"/api/v1/subcategory/{subcategory_id}")
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id
 
-    logger.debug(f"{category_id=}")
+    # delete category
     response = await client.delete(f"/api/v1/category/{category_id}")
     response_json = response.json()
     assert response.status_code == HTTP_200_OK

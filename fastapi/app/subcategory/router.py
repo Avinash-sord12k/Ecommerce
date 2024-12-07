@@ -11,10 +11,10 @@ from starlette.status import (
 
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.subcategory.repository import ProductSubCategoryRepository
-from app.subcategory.schema import (
-    AllSubCategoriesResponseSchema,
-    SubCategoryCreateSchema,
-    SubCategoryResponseSchema,
+from app.subcategory.models import (
+    AllSubCategoriesResponseModel,
+    SubCategoryCreateModel,
+    SubCategoryResponseModel,
 )
 
 router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
@@ -22,14 +22,14 @@ router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
 
 @router.post(
     "/create",
-    response_model=SubCategoryResponseSchema,
+    response_model=SubCategoryResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_sub_category(sub_category: SubCategoryCreateSchema):
+async def create_sub_category(sub_category: SubCategoryCreateModel):
     try:
         repo = ProductSubCategoryRepository()
         new_sub_category = await repo.create(sub_category)
-        return SubCategoryResponseSchema.model_validate(new_sub_category)
+        return SubCategoryResponseModel.model_validate(new_sub_category)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except EntityNotFoundError as e:
@@ -41,8 +41,8 @@ async def create_sub_category(sub_category: SubCategoryCreateSchema):
 
 
 @router.get(
-    "/get_by_id/{id}",
-    response_model=SubCategoryResponseSchema,
+    "/get-by-id/{id}",
+    response_model=SubCategoryResponseModel,
     status_code=HTTP_200_OK,
 )
 async def get_sub_category_by_id(id: int):
@@ -59,7 +59,7 @@ async def get_sub_category_by_id(id: int):
 
 @router.get(
     "/get-all",
-    response_model=AllSubCategoriesResponseSchema,
+    response_model=AllSubCategoriesResponseModel,
     status_code=HTTP_200_OK,
 )
 async def get_sub_category():
@@ -75,9 +75,10 @@ async def get_sub_category():
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{id}", response_model=SubCategoryResponseSchema, status_code=HTTP_200_OK)
+@router.delete("/{id}", response_model=SubCategoryResponseModel, status_code=HTTP_200_OK)
 async def delete_sub_category(id: int):
     try:
+        logger.info(f"Deleting sub-category with ID: {id}")
         repo = ProductSubCategoryRepository()
         subcategory = await repo.delete(id)
         return JSONResponse(content=subcategory, status_code=HTTP_200_OK)
