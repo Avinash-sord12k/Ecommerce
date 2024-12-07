@@ -41,17 +41,18 @@ services:
 
   fastapi:
     image: fastapi:latest
-    container_name: fastapi
-    restart: unless-stopped
+    container_name: fastap-test
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
+      PYTHONPATH: /home/appuser/
+      TESTMODE: True
     volumes:
-      - /home/x/Projects/Authentication/fastapi/app:/home/appuser/app # TODO: Remove this line
       - ./data/fastapi/shared:/home/appuser/shared
+    entrypoint: /home/appuser/testing-entrypoint.sh
     depends_on:
       - postgres
       - traefik

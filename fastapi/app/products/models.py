@@ -1,7 +1,22 @@
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.orm import relationship
 
 from app.config import Base
+
+product_subcategory_association = Table(
+    "product_subcategory_association",
+    Base.metadata,
+    Column("product_id", Integer, ForeignKey("products.id"), primary_key=True),
+    Column("subcategory_id", Integer, ForeignKey("sub_categories.id"), primary_key=True),
+)
 
 
 class Product(Base):
@@ -16,23 +31,10 @@ class Product(Base):
     discount = Column(Float, default=0.0)
     stock = Column(Integer, nullable=False, default=0)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
-    category = relationship("Category", back_populates="products")
-    sub_category_id = Column(
-        Integer, ForeignKey("sub_categories.id"), nullable=True
-    )
-    sub_category = relationship("SubCategory", back_populates="products")
     is_active = Column(Boolean, default=True, nullable=False)
 
+    # One-to-many relationship with Category
+    category = relationship("Category", back_populates="products")
 
-class Category(Base):
-    __tablename__ = "categories"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True, nullable=False)
-    products = relationship("Product", back_populates="category")
-
-
-class SubCategory(Base):
-    __tablename__ = "sub_categories"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True, nullable=False)
-    products = relationship("Product", back_populates="sub_category")
+    # Many-to-many relationship with SubCategory
+    sub_categories = relationship("SubCategory", secondary=product_subcategory_association, back_populates="products")

@@ -16,7 +16,7 @@ http:
     rate-limit-middleware:
       rateLimit:
         average: 10
-        period: 10s
+        period: 1s
         burst: 3
 
     basic-login-pass-middleware:

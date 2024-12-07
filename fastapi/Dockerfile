@@ -21,8 +21,10 @@ RUN venv/bin/pip install -r requirements.txt && rm -rf ~/.cache/pip
 
 COPY --chown=appuser:appuser app app
 COPY --chown=appuser:appuser entrypoints/server-entrypoint.sh ./
+COPY --chown=appuser:appuser entrypoints/testing-entrypoint.sh ./
 
 RUN chmod +x server-entrypoint.sh
+RUN chmod +x testing-entrypoint.sh
 
 EXPOSE 5000
 

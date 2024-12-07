@@ -12,7 +12,14 @@ class DatabaseManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, host, port, user, password, database):
+    def __init__(
+        self,
+        host=DB_CONFIGS["host"],
+        port=DB_CONFIGS["port"],
+        user=DB_CONFIGS["user"],
+        password=DB_CONFIGS["password"],
+        database=DB_CONFIGS["database"],
+    ):
         if hasattr(self, "initialized"):
             err_msg = "DatabaseManager is a singleton class"
             logger.error(err_msg)
@@ -26,7 +33,10 @@ class DatabaseManager:
         self.initialized = True
         self.engine = None
 
-    def get_url(self):
+    def get_url(self, _async: bool = True):
+        if not _async:
+            return f"postgresql://" f"{self.user}:" f"{self.password}@" f"{self.host}:" f"{self.port}/{self.database}"
+
         return (
             f"postgresql+asyncpg://"
             f"{self.user}:"
@@ -37,9 +47,7 @@ class DatabaseManager:
         )
 
     async def connect(self):
-        self.engine = create_async_engine(
-            self.get_url(), pool_size=DB_CONFIGS["pool_size"]
-        )
+        self.engine = create_async_engine(self.get_url(), pool_size=DB_CONFIGS["pool_size"])
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 

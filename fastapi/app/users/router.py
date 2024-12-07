@@ -28,7 +28,7 @@ async def create_user(user: UserCreate):
     try:
         user_repo = UserRepository()
         _user = await user_repo.create(user)
-        return UserRead.from_orm(_user)
+        return UserRead.model_validate(_user)
     except IntegrityError as e:
         logger.error(f"User already exists: {e}")
         raise HTTPException(
@@ -54,9 +54,7 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
             )
 
         encode_payload = {"user_id": user.id, "email": user.email}
-        token = create_access_token(
-            data=encode_payload, expires_delta=timedelta(seconds=5)
-        )
+        token = create_access_token(data=encode_payload, expires_delta=timedelta(seconds=5))
         return UserLoginResponse(access_token=token)
     except HTTPException as e:
         logger.exception(f"Error logging in user: {e=}")
@@ -74,27 +72,19 @@ async def get_user_me(user_id: int = Depends(get_user_id_from_token)):
     try:
         user_repo = UserRepository()
         if not (user := await user_repo.get_by_id(user_id)):
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
         await user_repo.update_last_active(user_id)
-        return UserRead.from_orm(user)
+        return UserRead.model_validate(user)
     except InvalidTokenError as e:
         logger.error(f"Invalid token: {e=}")
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
     except InvalidSignatureError as e:
         logger.error(f"Invalid signature: {e=}")
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid signature"
-        )
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid signature")
     except ExpiredSignatureError as e:
         logger.error(f"Token expired: {e=}")
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Token expired"
-        )
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Token expired")
     except HTTPException as e:
         logger.exception(f"Error getting user: {e=}")
         raise e
