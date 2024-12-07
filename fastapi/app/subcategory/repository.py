@@ -1,8 +1,9 @@
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.category.models import Category
 from app.subcategory.models import SubCategory
 from app.subcategory.schema import (
     AllSubCategoriesResponseSchema,
@@ -17,13 +18,14 @@ class ProductSubCategoryRepository:
     async def create(self, sub_category: SubCategoryCreateSchema):
         async with self.db.engine.begin() as connection:
             try:
-                result = (
-                    await connection.execute(select(Category).where(Category.id == sub_category.category_id))
-                ).one()
+                # check if the category exists
+                q = select(Category).where(Category.id == sub_category.category_id)
+                result = (await connection.execute(q)).one()
             except NoResultFound:
                 raise EntityNotFoundError(entity="Category")
 
             try:
+                # create the subcategory
                 result = await connection.execute(
                     insert(SubCategory).values(
                         name=sub_category.name,
@@ -39,6 +41,16 @@ class ProductSubCategoryRepository:
             except IntegrityError:
                 raise EntityIntegrityError(entity="Sub-Category")
 
+    async def get_by_id(self, id: int) -> SubCategory:
+        async with self.db.engine.begin() as connection:
+            q = select(SubCategory).where(SubCategory.id == id)
+            result = await connection.execute(q)
+            sub_category = result.fetchone()
+            if sub_category is None:
+                raise EntityNotFoundError(entity="Sub-Category")
+
+            return sub_category._asdict()
+
     async def get_all(self) -> AllSubCategoriesResponseSchema:
         async with self.db.engine.begin() as connection:
             result = await connection.execute(select(SubCategory))
@@ -53,3 +65,15 @@ class ProductSubCategoryRepository:
                     for sub_category in sub_categories
                 ]
             )
+
+    async def delete(self, id: int):
+        async with self.db.engine.begin() as connection:
+            q = select(SubCategory).where(SubCategory.id == id)
+            result = await connection.execute(q)
+            if not (sub_category := result.fetchone()):
+                raise EntityNotFoundError(entity="Sub-Category")
+
+            q = delete(SubCategory).where(SubCategory.id == sub_category.id)
+            await connection.execute(q)
+            await connection.commit()
+            return sub_category._asdict()

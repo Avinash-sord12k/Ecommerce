@@ -5,7 +5,7 @@ from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_create_category(client: AsyncClient, category_data: dict):
+async def test_get_category_by_id(client: AsyncClient, category_data: dict):
     response = await client.post("/api/v1/category/create", json=category_data)
     response_json = response.json()
     logger.debug(response_json)
@@ -13,7 +13,13 @@ async def test_create_category(client: AsyncClient, category_data: dict):
     assert response_json["name"] == category_data["name"]
 
     category_id = response_json["id"]
-    response = await client.delete(f"/api/v1/category/delete/{category_id}")
+    response = await client.get(f"/api/v1/category/get_by_id/{category_id}")
+    response_json = response.json()
+    logger.debug(response_json)
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == category_id
+
+    response = await client.delete(f"/api/v1/category/{category_id}")
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == category_id

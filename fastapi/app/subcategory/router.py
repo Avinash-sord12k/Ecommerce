@@ -24,12 +24,6 @@ router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
     "/create",
     response_model=SubCategoryResponseSchema,
     status_code=HTTP_201_CREATED,
-    responses={
-        400: {
-            "description": "Sub-category with this name already exists.",
-            "content": {"application/json": {"example": {"detail": "Sub-category with this name already exists."}}},
-        }
-    },
 )
 async def create_sub_category(sub_category: SubCategoryCreateSchema):
     try:
@@ -38,22 +32,35 @@ async def create_sub_category(sub_category: SubCategoryCreateSchema):
         return SubCategoryResponseSchema.model_validate(new_sub_category)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
+    except EntityNotFoundError as e:
+        logger.error(f"Category not found: {e=}")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating sub-category: {e=}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.get(
+    "/get_by_id/{id}",
+    response_model=SubCategoryResponseSchema,
+    status_code=HTTP_200_OK,
+)
+async def get_sub_category_by_id(id: int):
+    try:
+        repo = ProductSubCategoryRepository()
+        sub_category = await repo.get_by_id(id)
+        return JSONResponse(content=sub_category, status_code=HTTP_200_OK)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting sub-category by id: {e=}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get(
     "/get-all",
     response_model=AllSubCategoriesResponseSchema,
     status_code=HTTP_200_OK,
-    responses={
-        404: {
-            "description": "No sub-categories found.",
-            "content": {"application/json": {"example": {"detail": "No sub-categories found."}}},
-        },
-        500: {
-            "description": "Internal server error.",
-            "content": {"application/json": {"example": {"detail": "Internal server error."}}},
-        },
-    },
 )
 async def get_sub_category():
     try:
@@ -68,11 +75,12 @@ async def get_sub_category():
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{name}", status_code=HTTP_200_OK)
-async def delete_sub_category(name: str):
+@router.delete("/{id}", response_model=SubCategoryResponseSchema, status_code=HTTP_200_OK)
+async def delete_sub_category(id: int):
     try:
         repo = ProductSubCategoryRepository()
-        await repo.delete(name)
+        subcategory = await repo.delete(id)
+        return JSONResponse(content=subcategory, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:

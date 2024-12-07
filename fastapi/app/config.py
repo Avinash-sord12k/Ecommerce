@@ -27,6 +27,6 @@ DB_CONFIGS = {
 }
 
 
-SHARED_FOLDER = "/home/appuser/shared"
+SHARED_FOLDER = os.getenv("SHARED_FOLDER", "./shared")
 
 TESTMODE = os.getenv("TESTMODE", False)
