@@ -1,3 +1,4 @@
+from loguru import logger
 from sqlalchemy import insert, select, update, delete
 
 from app.database import DatabaseManager
@@ -7,9 +8,9 @@ from app.subcategory.repository import ProductSubCategoryRepository
 from app.subcategory.schema import product_subcategory_association
 from app.products.schema import Product
 from app.products.models import (
-    CreateProductRequestSchema,
-    UpdateProductRequestSchema,
-    ProductResponseSchema,
+    CreateProductRequestModel,
+    UpdateProductRequestModel,
+    ProductResponseModel,
 )
 
 
@@ -17,7 +18,7 @@ class ProductRepository:
     def __init__(self):
         self.db = DatabaseManager._instance
 
-    async def create(self, product: CreateProductRequestSchema) -> int:
+    async def create(self, product: CreateProductRequestModel) -> int:
         async with self.db.engine.begin() as connection:
             # Check if the category exist
             category_repo = ProductCategoryRepository()
@@ -54,13 +55,20 @@ class ProductRepository:
             return created_product_id
 
     async def update(
-        self, product_id: int, product_update: UpdateProductRequestSchema
-    ) -> ProductResponseSchema:
+        self, product_id: int, product_update: UpdateProductRequestModel
+    ) -> dict:
         async with self.db.engine.begin() as connection:
+            # Check if the product exist
+            q = select(Product).where(Product.id == product_id)
+            result = await connection.execute(q)
+            if not (_ := result.fetchone()):
+                raise EntityNotFoundError(entity="Product")
+
             # Delete all the existing sub-category associations
             q = delete(product_subcategory_association).where(
                 product_subcategory_association.c.product_id == product_id
             )
+            logger.debug(f"Delete existing associations: {q}")
             await connection.execute(q)
 
             # bulk create the new sub-category associations
@@ -68,6 +76,7 @@ class ProductRepository:
                 {"product_id": product_id, "sub_category_id": sub_category_id}
                 for sub_category_id in product_update.sub_category_ids
             ]
+            logger.debug(f"Insert new associations: {values}")
             q = insert(product_subcategory_association).values(values)
             await connection.execute(q)
 
@@ -87,11 +96,13 @@ class ProductRepository:
                     is_active=product_update.is_active,
                 )
             )
+
             await connection.execute(q)
+            logger.debug(f"Update product: {q}")
             await connection.commit()
             return product_update.model_dump()
 
-    async def get_by_id(self, product_id: int) -> ProductResponseSchema:
+    async def get_by_id(self, product_id: int) -> ProductResponseModel:
         async with self.db.engine.begin() as connection:
             q = select(Product).where(Product.id == product_id)
             result = await connection.execute(q)
@@ -103,7 +114,7 @@ class ProductRepository:
 
     async def get_by_category_id(
         self, category_id: int, max_objects: int = 10
-    ) -> list[ProductResponseSchema]:
+    ) -> list[ProductResponseModel]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)
@@ -119,7 +130,7 @@ class ProductRepository:
 
     async def get_by_category_name(
         self, category_name: str, max_objects: int = 10
-    ) -> list[ProductResponseSchema]:
+    ) -> list[ProductResponseModel]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)
@@ -133,25 +144,36 @@ class ProductRepository:
 
             return [product._asdict() for product in products]
 
-    async def get_by_sub_category_id(
+    async def get_by_subcategory_id(
         self, sub_category_id: int, max_objects: int = 10
-    ) -> list[ProductResponseSchema]:
+    ) -> list[ProductResponseModel]:
         async with self.db.engine.begin() as connection:
             q = (
-                select(Product)
-                .where(Product.sub_category_id == sub_category_id)
+                select(product_subcategory_association)
+                .where(
+                    product_subcategory_association.c.sub_category_id
+                    == sub_category_id
+                )
                 .limit(max_objects)
             )
             result = await connection.execute(q)
-            products = result.fetchall()
-            if not products:
+            associations = result.fetchall()
+            if not associations:
+                logger.debug("No associations found")
                 raise EntityNotFoundError(entity="Product")
 
+            q = select(Product).where(
+                Product.id.in_(
+                    [association.product_id for association in associations]
+                )
+            )
+            result = await connection.execute(q)
+            products = result.fetchall()
             return [product._asdict() for product in products]
 
     async def get_by_sub_category_name(
         self, sub_category_name: str, max_objects: int = 10
-    ) -> list[ProductResponseSchema]:
+    ) -> list[ProductResponseModel]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)

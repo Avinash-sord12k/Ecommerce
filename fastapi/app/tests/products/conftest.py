@@ -73,3 +73,26 @@ async def sub_category(
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id
+
+
+@pytest.fixture(scope="module")
+async def product(
+    client: AsyncClient, category: str, sub_category: tuple, product_data: dict
+):
+    category_id, subcategory_id = sub_category
+    product_data["category_id"] = category_id
+    product_data["sub_category_ids"] = [subcategory_id]
+
+    response = await client.post("/api/v1/product/create", json=product_data)
+    response_json = response.json()
+    assert response.status_code == HTTP_201_CREATED
+    assert response_json["name"] == product_data["name"]
+
+    product_id = response_json["id"]
+    yield product_id  # Return the product ID to the test
+
+    # Cleanup: Delete product
+    response = await client.delete(f"/api/v1/product/{product_id}")
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == product_id

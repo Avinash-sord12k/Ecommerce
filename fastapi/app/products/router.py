@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -12,9 +13,9 @@ from starlette.status import (
 from app.exceptions import EntityNotFoundError, EntityIntegrityError
 from app.products.repository import ProductRepository
 from app.products.models import (
-    CreateProductRequestSchema,
-    ProductResponseSchema,
-    UpdateProductRequestSchema,
+    CreateProductRequestModel,
+    ProductResponseModel,
+    UpdateProductRequestModel,
 )
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
@@ -22,14 +23,14 @@ router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 
 @router.post(
     "/create",
-    response_model=ProductResponseSchema,
+    response_model=ProductResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_product(product: CreateProductRequestSchema):
+async def create_product(product: CreateProductRequestModel):
     try:
         repo = ProductRepository()
         new_product_id = await repo.create(product)
-        return ProductResponseSchema(id=new_product_id, **product.model_dump())
+        return ProductResponseModel(id=new_product_id, **product.model_dump())
     except EntityNotFoundError as e:
         logger.error(f"Some dependency not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
@@ -43,7 +44,7 @@ async def create_product(product: CreateProductRequestSchema):
 
 @router.get(
     "/get-by-id/{id}",
-    response_model=ProductResponseSchema,
+    response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
 async def get_product_by_id(id: int):
@@ -61,7 +62,7 @@ async def get_product_by_id(id: int):
 
 @router.get(
     "/get-by-category-id/{category_id}",
-    response_model=ProductResponseSchema,
+    response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
 async def get_product_by_category_id(category_id: int):
@@ -79,13 +80,13 @@ async def get_product_by_category_id(category_id: int):
 
 @router.get(
     "/get-by-subcategory-id/{sub_category_id}",
-    response_model=ProductResponseSchema,
+    response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
 async def get_product_by_sub_category_id(sub_category_id: int):
     try:
         repo = ProductRepository()
-        products = await repo.get_by_sub_category_id(sub_category_id)
+        products = await repo.get_by_subcategory_id(sub_category_id)
         return JSONResponse(content=products, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
         logger.error(f"Sub-category not found: {e=}")
@@ -97,10 +98,10 @@ async def get_product_by_sub_category_id(sub_category_id: int):
 
 @router.put(
     "/update/{id}",
-    response_model=ProductResponseSchema,
+    response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
-async def update_product(id: int, product: UpdateProductRequestSchema):
+async def update_product(id: int, product: UpdateProductRequestModel):
     try:
         repo = ProductRepository()
         product = await repo.update(id, product)
@@ -114,7 +115,7 @@ async def update_product(id: int, product: UpdateProductRequestSchema):
 
 
 @router.delete(
-    "/{id}", response_model=ProductResponseSchema, status_code=HTTP_200_OK
+    "/{id}", response_model=ProductResponseModel, status_code=HTTP_200_OK
 )
 async def delete_product(id: int):
     try:

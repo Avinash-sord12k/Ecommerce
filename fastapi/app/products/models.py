@@ -1,22 +1,28 @@
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 from typing_extensions import Annotated
 
 
-class CreateProductRequestSchema(BaseModel):
+class CreateProductRequestModel(BaseModel):
     name: str = Field(
-        ..., max_length=100, description="The name of the product"
+        ...,
+        min_length=3,
+        max_length=100,
+        description="The name of the product",
     )
     description: Optional[str] = Field(
         None, max_length=500, description="Product description"
     )
     price: Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)] = (
-        Field(..., description="Price of the product in INR")
+        Field(Decimal, description="Price of the product in INR")
     )
     slug: str = Field(
-        ..., max_length=60, description="Unique slug for the product"
+        str,
+        min_length=3,
+        max_length=60,
+        description="Unique slug for the product",
     )
     tags: Optional[str] = Field(
         None, max_length=255, description="Comma-separated product tags"
@@ -37,10 +43,13 @@ class CreateProductRequestSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ProductResponseSchema(BaseModel):
+class ProductResponseModel(BaseModel):
     id: int = Field(..., description="The unique identifier of the product")
     name: str = Field(
-        ..., max_length=100, description="The name of the product"
+        ...,
+        min_length=3,
+        max_length=100,
+        description="The name of the product",
     )
     description: Optional[str] = Field(
         None, max_length=500, description="Product description"
@@ -49,7 +58,10 @@ class ProductResponseSchema(BaseModel):
         Field(..., description="Price of the product")
     )
     slug: str = Field(
-        ..., max_length=60, description="Unique slug for the product"
+        str,
+        min_length=3,
+        max_length=60,
+        description="Unique slug for the product",
     )
     tags: Optional[str] = Field(
         None, max_length=255, description="Comma-separated product tags"
@@ -69,34 +81,56 @@ class ProductResponseSchema(BaseModel):
     )
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("price")
+    def price_serializer(self, value: Decimal) -> str:
+        return str(value)
 
-class UpdateProductRequestSchema(BaseModel):
+    @field_serializer("discount")
+    def discount_serializer(self, value: Decimal) -> str:
+        return str(value)
+
+
+class UpdateProductRequestModel(BaseModel):
     name: Optional[str] = Field(
-        None, max_length=100, description="The name of the product"
+        str,
+        min_length=3,
+        max_length=100,
+        description="The name of the product",
     )
     description: Optional[str] = Field(
         None, max_length=500, description="Product description"
     )
     price: Optional[
         Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
-    ] = Field(None, description="Price of the product")
+    ] = Field(Decimal, description="Price of the product")
     slug: Optional[str] = Field(
-        None, max_length=60, description="Unique slug for the product"
+        str,
+        min_length=3,
+        max_length=60,
+        description="Unique slug for the product",
     )
     tags: Optional[str] = Field(
-        None, max_length=255, description="Comma-separated product tags"
+        str, max_length=255, description="Comma-separated product tags"
     )
     discount: Optional[
         Annotated[Decimal, Field(ge=0, le=100, max_digits=4, decimal_places=2)]
-    ] = Field(None, description="Discount percentage")
+    ] = Field(0.0, description="Discount percentage")
     stock: Optional[Annotated[int, Field(ge=0)]] = Field(
-        None, description="Available stock quantity"
+        int, description="Available stock quantity"
     )
     category_id: Optional[int] = Field(None, description="ID of the category")
-    sub_category_id: Optional[int] = Field(
-        None, description="ID of the sub-category"
+    sub_category_ids: Optional[list[int]] = Field(
+        None, description="List of sub-category IDs"
     )
     is_active: Optional[bool] = Field(
         None, description="Indicates if the product is active"
     )
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("price")
+    def price_serializer(self, value: Decimal) -> str:
+        return str(value)
+
+    @field_serializer("discount")
+    def discount_serializer(self, value: Decimal) -> str:
+        return str(value)
