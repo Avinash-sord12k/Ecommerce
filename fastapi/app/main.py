@@ -9,10 +9,10 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import ValidationError
 
-from app.category.router import router as category_router
+from app.categories.router import router as category_router
 from app.config import APP_CONFIGS, SHARED_FOLDER
 from app.database import DatabaseManager
-from app.subcategory.router import router as subcategory_router
+from app.subcategories.router import router as subcategory_router
 from app.users.router import router as users_router
 from app.products.router import router as products_router
 
@@ -52,17 +52,25 @@ app.add_middleware(
 
 # Define exception handlers
 @app.exception_handler(RequestValidationError)
-async def request_validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+async def request_validation_exception_handler(
+    request: Request, exc: ValidationError
+) -> JSONResponse:
     detail = exc.errors()[0]["msg"] if exc.errors() else "Validation Error"
     logger.error(f"Validation error: {exc.errors()}")
-    raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=detail)
+    raise HTTPException(
+        status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=detail
+    )
 
 
 @app.exception_handler(ResponseValidationError)
-async def response_validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+async def response_validation_exception_handler(
+    request: Request, exc: ValidationError
+) -> JSONResponse:
     detail = exc.errors()[0]["msg"] if exc.errors() else "Validation Error"
     logger.error(f"Validation error: {exc.errors()}")
-    raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=detail)
+    raise HTTPException(
+        status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=detail
+    )
 
 
 app.get(

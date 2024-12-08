@@ -9,8 +9,8 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.category.repository import ProductCategoryRepository
-from app.category.models import (
+from app.categories.repository import ProductCategoryRepository
+from app.categories.models import (
     CategoryCreateModel,
     CategoryResponseModel,
     AllCategoriesResponseModel,

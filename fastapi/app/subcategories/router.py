@@ -10,8 +10,8 @@ from starlette.status import (
 )
 
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
-from app.subcategory.repository import ProductSubCategoryRepository
-from app.subcategory.models import (
+from app.subcategories.repository import ProductSubCategoryRepository
+from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
     SubCategoryResponseModel,
@@ -68,14 +68,18 @@ async def get_sub_category():
         all_sub_categories = await repo.get_all()
         return JSONResponse(
             content=all_sub_categories.model_dump(),
-            status_code=(HTTP_200_OK if all_sub_categories else HTTP_404_NOT_FOUND),
+            status_code=(
+                HTTP_200_OK if all_sub_categories else HTTP_404_NOT_FOUND
+            ),
         )
     except Exception as e:
         logger.error(f"Error getting sub-categories: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{id}", response_model=SubCategoryResponseModel, status_code=HTTP_200_OK)
+@router.delete(
+    "/{id}", response_model=SubCategoryResponseModel, status_code=HTTP_200_OK
+)
 async def delete_sub_category(id: int):
     try:
         logger.info(f"Deleting sub-category with ID: {id}")

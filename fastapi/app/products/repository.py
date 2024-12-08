@@ -3,9 +3,9 @@ from sqlalchemy import insert, select, update, delete
 
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
-from app.category.repository import ProductCategoryRepository
-from app.subcategory.repository import ProductSubCategoryRepository
-from app.subcategory.schema import product_subcategory_association
+from app.categories.repository import ProductCategoryRepository
+from app.subcategories.repository import ProductSubCategoryRepository
+from app.subcategories.schema import product_subcategory_association
 from app.products.schema import Product
 from app.products.models import (
     CreateProductRequestModel,

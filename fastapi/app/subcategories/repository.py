@@ -3,9 +3,9 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
-from app.category.schema import Category
-from app.subcategory.schema import SubCategory
-from app.subcategory.models import (
+from app.categories.schema import Category
+from app.subcategories.schema import SubCategory
+from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
 )
@@ -19,7 +19,9 @@ class ProductSubCategoryRepository:
         async with self.db.engine.begin() as connection:
             try:
                 # check if the category exists
-                q = select(Category).where(Category.id == sub_category.category_id)
+                q = select(Category).where(
+                    Category.id == sub_category.category_id
+                )
                 result = (await connection.execute(q)).one()
             except NoResultFound:
                 raise EntityNotFoundError(entity="Category")
