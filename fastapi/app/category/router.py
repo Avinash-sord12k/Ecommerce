@@ -10,7 +10,11 @@ from starlette.status import (
 )
 
 from app.category.repository import ProductCategoryRepository
-from app.category.models import CategoryCreateModel, CategoryResponseModel, AllCategoriesResponseModel
+from app.category.models import (
+    CategoryCreateModel,
+    CategoryResponseModel,
+    AllCategoriesResponseModel,
+)
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])
@@ -23,7 +27,13 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
     responses={
         400: {
             "description": "Category with this name already exists.",
-            "content": {"application/json": {"example": {"detail": "Category with this name already exists."}}},
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Category with this name already exists."
+                    }
+                }
+            },
         }
     },
 )
@@ -39,7 +49,11 @@ async def create_category(category: CategoryCreateModel):
         )
 
 
-@router.get("/get-by-id/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK)
+@router.get(
+    "/get-by-id/{id}",
+    response_model=CategoryResponseModel,
+    status_code=HTTP_200_OK,
+)
 async def get_category_by_id(id: int):
     try:
         repo = ProductCategoryRepository()
@@ -59,11 +73,19 @@ async def get_category_by_id(id: int):
     responses={
         404: {
             "description": "No categories found.",
-            "content": {"application/json": {"example": {"detail": "No categories found."}}},
+            "content": {
+                "application/json": {
+                    "example": {"detail": "No categories found."}
+                }
+            },
         },
         500: {
             "description": "Internal server error.",
-            "content": {"application/json": {"example": {"detail": "Internal server error."}}},
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Internal server error."}
+                }
+            },
         },
     },
 )
@@ -73,17 +95,23 @@ async def get_category():
         all_categories = await repo.get_all()
         return JSONResponse(
             content=all_categories.model_dump(),
-            status_code=(HTTP_200_OK if all_categories else HTTP_404_NOT_FOUND),
+            status_code=(
+                HTTP_200_OK if all_categories else HTTP_404_NOT_FOUND
+            ),
         )
     except Exception as e:
         logger.error(f"Error getting categories: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK)
+@router.delete(
+    "/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK
+)
 async def delete_category(id: int):
     if not isinstance(id, int):
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid ID")
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST, detail="Invalid ID"
+        )
 
     try:
         repo = ProductCategoryRepository()
