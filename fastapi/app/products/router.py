@@ -52,6 +52,7 @@ async def get_product_by_id(id: int):
         product = await repo.get_by_id(id)
         return JSONResponse(content=product, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
+        logger.error(f"Product not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting product by id: {e=}")
@@ -68,23 +69,11 @@ async def get_product_by_category_id(category_id: int):
         repo = ProductRepository()
         products = await repo.get_by_category_id(category_id)
         return JSONResponse(content=products, status_code=HTTP_200_OK)
+    except EntityNotFoundError as e:
+        logger.error(f"Category not found: {e=}")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting products by category: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
-    "/get-by-category-name/{category_name}",
-    response_model=ProductResponseSchema,
-    status_code=HTTP_200_OK,
-)
-async def get_product_by_category_name(category_name: str):
-    try:
-        repo = ProductRepository()
-        products = await repo.get_by_category_name(category_name)
-        return JSONResponse(content=products, status_code=HTTP_200_OK)
-    except Exception as e:
-        logger.error(f"Error getting products by category name: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -98,23 +87,11 @@ async def get_product_by_sub_category_id(sub_category_id: int):
         repo = ProductRepository()
         products = await repo.get_by_sub_category_id(sub_category_id)
         return JSONResponse(content=products, status_code=HTTP_200_OK)
+    except EntityNotFoundError as e:
+        logger.error(f"Sub-category not found: {e=}")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting products by sub-category id: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
-    "/get-by-subcategory-name/{sub_category_name}",
-    response_model=ProductResponseSchema,
-    status_code=HTTP_200_OK,
-)
-async def get_product_by_sub_category_name(sub_category_name: str):
-    try:
-        repo = ProductRepository()
-        products = await repo.get_by_sub_category_name(sub_category_name)
-        return JSONResponse(content=products, status_code=HTTP_200_OK)
-    except Exception as e:
-        logger.error(f"Error getting products by sub-category name: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -128,12 +105,17 @@ async def update_product(id: int, product: UpdateProductRequestSchema):
         repo = ProductRepository()
         product = await repo.update(id, product)
         return JSONResponse(content=product, status_code=HTTP_200_OK)
+    except EntityNotFoundError as e:
+        logger.error(f"Product not found: {e=}")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error updating product: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@router.delete("/{id}", response_model=ProductResponseSchema, status_code=HTTP_200_OK)
+@router.delete(
+    "/{id}", response_model=ProductResponseSchema, status_code=HTTP_200_OK
+)
 async def delete_product(id: int):
     try:
         repo = ProductRepository()

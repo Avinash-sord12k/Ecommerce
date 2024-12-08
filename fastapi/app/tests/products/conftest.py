@@ -53,10 +53,14 @@ async def category(client: AsyncClient, category_data: dict):
 
 
 @pytest.fixture(scope="module")
-async def sub_category(client: AsyncClient, category: str, sub_category_data: dict):
+async def sub_category(
+    client: AsyncClient, category: str, sub_category_data: dict
+):
     # Create subcategory
     sub_category_data["category_id"] = category
-    response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
+    response = await client.post(
+        "/api/v1/subcategory/create", json=sub_category_data
+    )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
     assert response_json["name"] == sub_category_data["name"]

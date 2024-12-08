@@ -25,7 +25,8 @@ class ProductRepository:
 
             # Check if the subcategory exist
             sub_category_repo = ProductSubCategoryRepository()
-            await sub_category_repo.get_by_id(product.sub_category_id)
+            for sub_category_id in product.sub_category_ids:
+                await sub_category_repo.get_by_id(sub_category_id)
 
             # Create a new product in the database
             q = insert(Product).values(
@@ -42,17 +43,36 @@ class ProductRepository:
             result = await connection.execute(q)
             created_product_id = result.inserted_primary_key[0]
 
-            q = insert(product_subcategory_association).values(
-                product_id=created_product_id,
-                sub_category_id=product.sub_category_id,
-            )
-            result = await connection.execute(q)
+            for sub_category_id in product.sub_category_ids:
+                q = insert(product_subcategory_association).values(
+                    product_id=created_product_id,
+                    sub_category_id=sub_category_id,
+                )
+                result = await connection.execute(q)
+
             await connection.commit()
             return created_product_id
 
-    async def update(self, product_id: int, product_update: UpdateProductRequestSchema) -> ProductResponseSchema:
+    async def update(
+        self, product_id: int, product_update: UpdateProductRequestSchema
+    ) -> ProductResponseSchema:
         async with self.db.engine.begin() as connection:
-            stmt = (
+            # Delete all the existing sub-category associations
+            q = delete(product_subcategory_association).where(
+                product_subcategory_association.c.product_id == product_id
+            )
+            await connection.execute(q)
+
+            # bulk create the new sub-category associations
+            values = [
+                {"product_id": product_id, "sub_category_id": sub_category_id}
+                for sub_category_id in product_update.sub_category_ids
+            ]
+            q = insert(product_subcategory_association).values(values)
+            await connection.execute(q)
+
+            # Update the product
+            q = (
                 update(Product)
                 .where(Product.id == product_id)
                 .values(
@@ -64,12 +84,10 @@ class ProductRepository:
                     discount=product_update.discount,
                     stock=product_update.stock,
                     category_id=product_update.category_id,
-                    sub_category_id=product_update.sub_category_id,
                     is_active=product_update.is_active,
                 )
             )
-
-            await connection.execute(stmt)
+            await connection.execute(q)
             await connection.commit()
             return product_update.model_dump()
 
@@ -83,9 +101,15 @@ class ProductRepository:
 
             return product._asdict()
 
-    async def get_by_category_id(self, category_id: int, max_objects: int = 10) -> list[ProductResponseSchema]:
+    async def get_by_category_id(
+        self, category_id: int, max_objects: int = 10
+    ) -> list[ProductResponseSchema]:
         async with self.db.engine.begin() as connection:
-            q = select(Product).where(Product.category_id == category_id).limit(max_objects)
+            q = (
+                select(Product)
+                .where(Product.category_id == category_id)
+                .limit(max_objects)
+            )
             result = await connection.execute(q)
             products = result.fetchall()
             if not products:
@@ -93,9 +117,15 @@ class ProductRepository:
 
             return [product._asdict() for product in products]
 
-    async def get_by_category_name(self, category_name: str, max_objects: int = 10) -> list[ProductResponseSchema]:
+    async def get_by_category_name(
+        self, category_name: str, max_objects: int = 10
+    ) -> list[ProductResponseSchema]:
         async with self.db.engine.begin() as connection:
-            q = select(Product).where(Product.category.has(name=category_name)).limit(max_objects)
+            q = (
+                select(Product)
+                .where(Product.category.has(name=category_name))
+                .limit(max_objects)
+            )
             result = await connection.execute(q)
             products = result.fetchall()
             if not products:
@@ -103,9 +133,15 @@ class ProductRepository:
 
             return [product._asdict() for product in products]
 
-    async def get_by_sub_category_id(self, sub_category_id: int, max_objects: int = 10) -> list[ProductResponseSchema]:
+    async def get_by_sub_category_id(
+        self, sub_category_id: int, max_objects: int = 10
+    ) -> list[ProductResponseSchema]:
         async with self.db.engine.begin() as connection:
-            q = select(Product).where(Product.sub_category_id == sub_category_id).limit(max_objects)
+            q = (
+                select(Product)
+                .where(Product.sub_category_id == sub_category_id)
+                .limit(max_objects)
+            )
             result = await connection.execute(q)
             products = result.fetchall()
             if not products:
@@ -117,7 +153,11 @@ class ProductRepository:
         self, sub_category_name: str, max_objects: int = 10
     ) -> list[ProductResponseSchema]:
         async with self.db.engine.begin() as connection:
-            q = select(Product).where(Product.sub_category.has(name=sub_category_name)).limit(max_objects)
+            q = (
+                select(Product)
+                .where(Product.sub_category.has(name=sub_category_name))
+                .limit(max_objects)
+            )
             result = await connection.execute(q)
             products = result.fetchall()
             if not products:
