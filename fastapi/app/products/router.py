@@ -4,11 +4,12 @@ from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityNotFoundError
+from app.exceptions import EntityNotFoundError, EntityIntegrityError
 from app.products.repository import ProductRepository
 from app.products.models import (
     CreateProductRequestSchema,
@@ -29,6 +30,12 @@ async def create_product(product: CreateProductRequestSchema):
         repo = ProductRepository()
         new_product_id = await repo.create(product)
         return ProductResponseSchema(id=new_product_id, **product.model_dump())
+    except EntityNotFoundError as e:
+        logger.error(f"Some dependency not found: {e=}")
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
+    except EntityIntegrityError as e:
+        logger.error(f"Product or Dependency already exists: {e=}")
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating product: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)

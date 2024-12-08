@@ -11,18 +11,9 @@ from starlette.status import (
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_create_sub_category(client: AsyncClient, category_data: dict, sub_category_data: dict):
-    # Create category
-    response = await client.post("/api/v1/category/create", json=category_data)
-    response_json = response.json()
-    logger.debug(response_json)
-    assert response.status_code == HTTP_201_CREATED
-    assert response_json["name"] == category_data["name"]
-
-    category_id = response_json["id"]
-
+async def test_create_sub_category(client: AsyncClient, category: str, sub_category_data: dict):
     # Create subcategory
-    sub_category_data["category_id"] = category_id
+    sub_category_data["category_id"] = category
     response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
     response_json = response.json()
     logger.debug(response_json)
@@ -37,12 +28,6 @@ async def test_create_sub_category(client: AsyncClient, category_data: dict, sub
     logger.debug(response_json)
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id
-
-    # Delete category
-    response = await client.delete(f"/api/v1/category/{category_id}")
-    response_json = response.json()
-    assert response.status_code == HTTP_200_OK
-    assert response_json["id"] == category_id
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -66,45 +51,23 @@ async def test_create_sub_category_with_invalid_category_id(client: AsyncClient,
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_create_sub_category_without_required_fields(client: AsyncClient, category_data: dict):
-    # Create category first
-    response = await client.post("/api/v1/category/create", json=category_data)
-    response_json = response.json()
-    logger.debug(response_json)
-    assert response.status_code == HTTP_201_CREATED
-    assert response_json["name"] == category_data["name"]
-
-    category_id = response_json["id"]
-
+async def test_create_sub_category_without_required_fields(client: AsyncClient, category: str):
     # Try to create subcategory without a name (missing required field)
-    sub_category_data = {"category_id": category_id}  # Missing 'name' field
+    sub_category_data = {"category_id": category}  # Missing 'name' field
     response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
     response_json = response.json()
     logger.debug(response_json)
     assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
-    # delete category
-    response = await client.delete(f"/api/v1/category/{category_id}")
-    response_json = response.json()
-    assert response.status_code == HTTP_200_OK
-    assert response_json["id"] == category_id
-
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category_with_duplicate_name(
-    client: AsyncClient, category_data: dict, sub_category_data: dict
+    client: AsyncClient,
+    category: str,
+    sub_category_data: dict,
 ):
-    # Create category
-    response = await client.post("/api/v1/category/create", json=category_data)
-    response_json = response.json()
-    logger.debug(response_json)
-    assert response.status_code == HTTP_201_CREATED
-    assert response_json["name"] == category_data["name"]
-
-    category_id = response_json["id"]
-
     # Create the first subcategory
-    sub_category_data["category_id"] = category_id
+    sub_category_data["category_id"] = category
     response = await client.post("/api/v1/subcategory/create", json=sub_category_data)
     response_json = response.json()
     logger.debug(response_json)
@@ -124,9 +87,3 @@ async def test_create_sub_category_with_duplicate_name(
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id
-
-    # delete category
-    response = await client.delete(f"/api/v1/category/{category_id}")
-    response_json = response.json()
-    assert response.status_code == HTTP_200_OK
-    assert response_json["id"] == category_id

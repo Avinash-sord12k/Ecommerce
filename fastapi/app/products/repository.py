@@ -2,6 +2,9 @@ from sqlalchemy import insert, select, update, delete
 
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
+from app.category.repository import ProductCategoryRepository
+from app.subcategory.repository import ProductSubCategoryRepository
+from app.subcategory.schema import product_subcategory_association
 from app.products.schema import Product
 from app.products.models import (
     CreateProductRequestSchema,
@@ -16,6 +19,14 @@ class ProductRepository:
 
     async def create(self, product: CreateProductRequestSchema) -> int:
         async with self.db.engine.begin() as connection:
+            # Check if the category exist
+            category_repo = ProductCategoryRepository()
+            await category_repo.get_by_id(product.category_id)
+
+            # Check if the subcategory exist
+            sub_category_repo = ProductSubCategoryRepository()
+            await sub_category_repo.get_by_id(product.sub_category_id)
+
             # Create a new product in the database
             q = insert(Product).values(
                 name=product.name,
@@ -26,13 +37,17 @@ class ProductRepository:
                 discount=product.discount,
                 stock=product.stock,
                 category_id=product.category_id,
-                sub_category_id=product.sub_category_id,
                 is_active=product.is_active,
             )
             result = await connection.execute(q)
-            await connection.commit()
-
             created_product_id = result.inserted_primary_key[0]
+
+            q = insert(product_subcategory_association).values(
+                product_id=created_product_id,
+                sub_category_id=product.sub_category_id,
+            )
+            result = await connection.execute(q)
+            await connection.commit()
             return created_product_id
 
     async def update(self, product_id: int, product_update: UpdateProductRequestSchema) -> ProductResponseSchema:
@@ -63,7 +78,7 @@ class ProductRepository:
             q = select(Product).where(Product.id == product_id)
             result = await connection.execute(q)
             product = result.fetchone()
-            if product is None:
+            if not product:
                 raise EntityNotFoundError(entity="Product")
 
             return product._asdict()
@@ -73,6 +88,9 @@ class ProductRepository:
             q = select(Product).where(Product.category_id == category_id).limit(max_objects)
             result = await connection.execute(q)
             products = result.fetchall()
+            if not products:
+                raise EntityNotFoundError(entity="Product")
+
             return [product._asdict() for product in products]
 
     async def get_by_category_name(self, category_name: str, max_objects: int = 10) -> list[ProductResponseSchema]:
@@ -80,6 +98,9 @@ class ProductRepository:
             q = select(Product).where(Product.category.has(name=category_name)).limit(max_objects)
             result = await connection.execute(q)
             products = result.fetchall()
+            if not products:
+                raise EntityNotFoundError(entity="Product")
+
             return [product._asdict() for product in products]
 
     async def get_by_sub_category_id(self, sub_category_id: int, max_objects: int = 10) -> list[ProductResponseSchema]:
@@ -87,6 +108,9 @@ class ProductRepository:
             q = select(Product).where(Product.sub_category_id == sub_category_id).limit(max_objects)
             result = await connection.execute(q)
             products = result.fetchall()
+            if not products:
+                raise EntityNotFoundError(entity="Product")
+
             return [product._asdict() for product in products]
 
     async def get_by_sub_category_name(
@@ -96,6 +120,9 @@ class ProductRepository:
             q = select(Product).where(Product.sub_category.has(name=sub_category_name)).limit(max_objects)
             result = await connection.execute(q)
             products = result.fetchall()
+            if not products:
+                raise EntityNotFoundError(entity="Product")
+
             return [product._asdict() for product in products]
 
     async def delete(self, id: int):

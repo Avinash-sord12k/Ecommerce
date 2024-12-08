@@ -1,22 +1,8 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-)
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.config import Base
-
-product_subcategory_association = Table(
-    "product_subcategory_association",
-    Base.metadata,
-    Column("product_id", Integer, ForeignKey("products.id"), primary_key=True),
-    Column("subcategory_id", Integer, ForeignKey("sub_categories.id"), primary_key=True),
-)
+from app.subcategory.schema import product_subcategory_association
 
 
 class Product(Base):
@@ -37,4 +23,8 @@ class Product(Base):
     category = relationship("Category", back_populates="products")
 
     # Many-to-many relationship with SubCategory
-    sub_categories = relationship("SubCategory", secondary=product_subcategory_association, back_populates="products")
+    sub_categories = relationship(
+        "SubCategory",
+        secondary=product_subcategory_association,
+        back_populates="products",
+    )
