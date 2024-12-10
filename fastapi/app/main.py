@@ -29,8 +29,8 @@ async def lifespan(app):
     await database_manager.connect()
 
     logger.info("Seeding database")
-    await RoleSeeder().run()
     await PermissionSeeder().run()
+    await RoleSeeder().run()
 
     os.makedirs(SHARED_FOLDER, exist_ok=True)
     os.makedirs(f"{SHARED_FOLDER}/db", exist_ok=True)

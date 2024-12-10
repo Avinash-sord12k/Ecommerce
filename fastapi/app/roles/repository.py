@@ -35,7 +35,7 @@ class RoleRepository:
                     permission_ids=[],
                 ).model_dump()
             except IntegrityError:
-                logger.error(f"Role with name {role.name} already exists")
+                logger.warning(f"Role {role.name} already exists")
                 raise EntityIntegrityError(entity="Role")
             except Exception as e:
                 logger.error(f"Error creating role: {e=}")
@@ -129,3 +129,43 @@ class RoleRepository:
                 description=role_update.description,
                 permission_ids=role_update.permission_ids,
             ).model_dump()
+
+    async def associate_permission(self, role_id: int, permission: str):
+        async with self.db.engine.begin() as connection:
+            try:
+                # Check if the role exists
+                q = select(Role).where(Role.id == role_id)
+                result = await connection.execute(q)
+                if not result.scalar():
+                    raise EntityNotFoundError(entity="Role")
+
+                # Get permission id from permission name
+                q = select(Permission).where(Permission.name == permission)
+                result = await connection.execute(q)
+                permission_id = result.fetchone()[0]
+            except EntityNotFoundError as e:
+                logger.error(f"Error fetching role or permission: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error fetching role or permission: {e=}")
+                raise e
+
+            try:
+                # Associate the permission with the role
+                q = insert(role_permission_association).values(
+                    role_id=role_id, permission_id=permission_id
+                )
+                await connection.execute(q)
+                await connection.commit()
+                return True
+            except IntegrityError:
+                logger.warning(
+                    "Role Permission association "
+                    + f"{role_id} {permission_id} already exists"
+                )
+                raise EntityIntegrityError(entity="Permission")
+            except Exception as e:
+                logger.error(
+                    f"Error creating role permission association: {e=}"
+                )
+                raise e

@@ -33,9 +33,7 @@ class PermissionRepository:
                     description=permission.description,
                 ).model_dump()
             except IntegrityError:
-                logger.error(
-                    f"Permission with name {permission.name} already exists"
-                )
+                logger.warning(f"Permission {permission.name} already exists")
                 raise EntityIntegrityError(entity="Permission")
             except Exception as e:
                 logger.error(f"Error creating permission: {e=}")

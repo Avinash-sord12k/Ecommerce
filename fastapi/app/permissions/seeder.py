@@ -1,4 +1,5 @@
 from loguru import logger
+from sqlalchemy import delete
 
 from app.categories.permissions import PERMISSIONS as CATEGORY_PERMISSIONS
 from app.exceptions import EntityIntegrityError
@@ -23,11 +24,14 @@ class Seeder:
     ]
 
     async def run(self):
+        # delete all permission from existing table
         repo = PermissionRepository()
         for value in self.VALUES:
             try:
                 await repo.create(value)
-            except EntityIntegrityError as e:
-                logger.warning(f"Permission already exists {e=}")
+            except EntityIntegrityError:
+                pass
             except Exception as e:
                 logger.error(f"Error seeding permission: {e=}")
+
+        logger.info("Seeding permissions completed")
