@@ -11,7 +11,14 @@ class Category(Base):
     name = Column(String(50), unique=True, nullable=False)
 
     # One-to-many relationship with Product
-    products = relationship("Product", back_populates="category")
+    products = relationship(
+        "Product",
+        back_populates="category",
+    )
 
     # One-to-many relationship with SubCategory
-    sub_categories = relationship("SubCategory", back_populates="category", cascade="all, delete-orphan")
+    sub_categories = relationship(
+        "SubCategory",
+        back_populates="category",
+        cascade="all, delete-orphan",
+    )

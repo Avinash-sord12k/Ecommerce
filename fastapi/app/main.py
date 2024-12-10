@@ -12,9 +12,13 @@ from pydantic import ValidationError
 from app.categories.router import router as category_router
 from app.config import APP_CONFIGS, SHARED_FOLDER
 from app.database import DatabaseManager
+from app.permissions.router import router as permissions_router
+from app.permissions.seeder import Seeder as PermissionSeeder
+from app.products.router import router as products_router
+from app.roles.router import router as roles_router
+from app.roles.seeder import Seeder as RoleSeeder
 from app.subcategories.router import router as subcategory_router
 from app.users.router import router as users_router
-from app.products.router import router as products_router
 
 
 @asynccontextmanager
@@ -23,6 +27,11 @@ async def lifespan(app):
 
     database_manager = DatabaseManager()
     await database_manager.connect()
+
+    logger.info("Seeding database")
+    await RoleSeeder().run()
+    await PermissionSeeder().run()
+
     os.makedirs(SHARED_FOLDER, exist_ok=True)
     os.makedirs(f"{SHARED_FOLDER}/db", exist_ok=True)
     yield
@@ -80,8 +89,11 @@ app.get(
     tags=["Default"],
 )(lambda: "Welcome to FastAPI v1")
 
+
 # Routers
 app.include_router(router=users_router)
+app.include_router(router=roles_router)
+app.include_router(router=permissions_router)
 app.include_router(router=category_router)
 app.include_router(router=subcategory_router)
 app.include_router(router=products_router)

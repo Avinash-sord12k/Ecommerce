@@ -35,7 +35,13 @@ class DatabaseManager:
 
     def get_url(self, _async: bool = True):
         if not _async:
-            return f"postgresql://" f"{self.user}:" f"{self.password}@" f"{self.host}:" f"{self.port}/{self.database}"
+            return (
+                f"postgresql://"
+                f"{self.user}:"
+                f"{self.password}@"
+                f"{self.host}:"
+                f"{self.port}/{self.database}"
+            )
 
         return (
             f"postgresql+asyncpg://"
@@ -47,7 +53,9 @@ class DatabaseManager:
         )
 
     async def connect(self):
-        self.engine = create_async_engine(self.get_url(), pool_size=DB_CONFIGS["pool_size"])
+        self.engine = create_async_engine(
+            self.get_url(), pool_size=DB_CONFIGS["pool_size"]
+        )
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
