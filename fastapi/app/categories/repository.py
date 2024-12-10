@@ -1,11 +1,11 @@
 from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError
 
-from app.categories.schema import Category
 from app.categories.models import (
     AllCategoriesResponseModel,
     CategoryCreateModel,
 )
+from app.categories.schema import Category
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 

@@ -1,5 +1,6 @@
-import pytest_asyncio
 from uuid import uuid4
+
+import pytest_asyncio
 
 
 @pytest_asyncio.fixture(scope="session")

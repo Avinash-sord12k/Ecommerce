@@ -10,13 +10,13 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityNotFoundError, EntityIntegrityError
-from app.products.repository import ProductRepository
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.products.models import (
     CreateProductRequestModel,
     ProductResponseModel,
     UpdateProductRequestModel,
 )
+from app.products.repository import ProductRepository
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 

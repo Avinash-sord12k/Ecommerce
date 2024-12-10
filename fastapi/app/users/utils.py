@@ -26,7 +26,9 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expires_delta = expires_delta or timedelta(minutes=15)
     to_encode.update({"exp": datetime.now(timezone.utc) + expires_delta})
-    encoded_jwt = jwt.encode(payload=to_encode, key=SECRET_KEY, algorithm=HASHING_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        payload=to_encode, key=SECRET_KEY, algorithm=HASHING_ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -36,7 +38,9 @@ def get_user_id_from_token(token: str = Depends(oauth2scheme)):
         if user_id := payload["user_id"]:
             return user_id
 
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
     except jwt.ExpiredSignatureError as e:
         logger.error(f"Token expired: {e=}")
         return None

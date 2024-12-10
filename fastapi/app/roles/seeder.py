@@ -31,6 +31,13 @@ class Seeder(object):
         {"role_id": 2, "permission": "read_category"},
         {"role_id": 2, "permission": "read_subcategory"},
         {"role_id": 2, "permission": "read_product"},
+        {"role_id": 3, "permission": "read_role"},
+        {"role_id": 3, "permission": "read_category"},
+        {"role_id": 3, "permission": "read_subcategory"},
+        {"role_id": 3, "permission": "read_product"},
+        {"role_id": 3, "permission": "create_product"},
+        {"role_id": 3, "permission": "update_product"},
+        {"role_id": 3, "permission": "delete_product"},
     ]
 
     @staticmethod

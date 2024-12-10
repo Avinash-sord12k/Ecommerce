@@ -1,7 +1,11 @@
 import pytest
 from httpx import AsyncClient
 from loguru import logger
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 
 @pytest.mark.asyncio(loop_scope="session")

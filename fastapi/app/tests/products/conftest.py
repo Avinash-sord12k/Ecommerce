@@ -1,6 +1,7 @@
+from uuid import uuid4
+
 import pytest
 import pytest_asyncio
-from uuid import uuid4
 from httpx import AsyncClient
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 

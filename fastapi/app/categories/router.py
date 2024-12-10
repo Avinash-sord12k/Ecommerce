@@ -9,12 +9,12 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.categories.repository import ProductCategoryRepository
 from app.categories.models import (
+    AllCategoriesResponseModel,
     CategoryCreateModel,
     CategoryResponseModel,
-    AllCategoriesResponseModel,
 )
+from app.categories.repository import ProductCategoryRepository
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])

@@ -10,12 +10,12 @@ from starlette.status import (
 )
 
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
-from app.subcategories.repository import ProductSubCategoryRepository
 from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
     SubCategoryResponseModel,
 )
+from app.subcategories.repository import ProductSubCategoryRepository
 
 router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
 

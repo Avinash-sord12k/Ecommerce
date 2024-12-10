@@ -1,5 +1,4 @@
 from loguru import logger
-from sqlalchemy import delete
 
 from app.categories.permissions import PERMISSIONS as CATEGORY_PERMISSIONS
 from app.exceptions import EntityIntegrityError

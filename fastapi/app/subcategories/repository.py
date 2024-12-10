@@ -1,14 +1,14 @@
-from sqlalchemy import insert, select, delete
+from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from app.categories.schema import Category
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
-from app.categories.schema import Category
-from app.subcategories.schema import SubCategory
 from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
 )
+from app.subcategories.schema import SubCategory
 
 
 class ProductSubCategoryRepository:

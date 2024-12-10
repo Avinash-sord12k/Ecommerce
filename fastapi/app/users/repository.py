@@ -52,7 +52,11 @@ class UserRepository:
 
     async def update_last_active(self, user_id: int):
         async with self.db.engine.begin() as connection:
-            await connection.execute(update(User).where(User.id == user_id).values(last_active=datetime.now()))
+            await connection.execute(
+                update(User)
+                .where(User.id == user_id)
+                .values(last_active=datetime.now())
+            )
             await connection.commit()
             logger.info(f"User {user_id} updated successfully")
 
