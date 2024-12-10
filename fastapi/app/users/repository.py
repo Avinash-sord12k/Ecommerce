@@ -1,11 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy import insert, select, update
+from sqlalchemy.exc import IntegrityError
 
 from app.database import DatabaseManager
-from app.users.models import User
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.roles.schema import Role
+from app.users.schema import User
 from app.users.utils import hash_password, verify_password
 
 
@@ -15,23 +18,37 @@ class UserRepository:
 
     async def create(self, user: User):
         async with self.db.engine.begin() as connection:
-            await connection.execute(
-                insert(User).values(
-                    email=user.email,
-                    username=user.username,
-                    password=hash_password(user.password),
-                    full_name=user.full_name,
-                    address=user.address,
-                    phone=user.phone,
-                ),
-            )
-            result = await connection.execute(
-                select(User).where(User.username == user.username),
-            )
-            user = result.fetchone()
-            await connection.commit()
-            logger.info(f"User {user[0]} created successfully")
-        return user
+            try:
+                q = select(Role).where(Role.name == user.role.value)
+                if not (role := (await connection.execute(q)).fetchone()):
+                    raise EntityNotFoundError(entity="Role")
+
+                role_id = role[0]
+                await connection.execute(
+                    insert(User).values(
+                        email=user.email,
+                        username=user.username,
+                        password=hash_password(user.password),
+                        full_name=user.full_name,
+                        role_id=role_id,
+                        phone=user.phone,
+                        address=user.address,
+                    ),
+                )
+                result = await connection.execute(
+                    select(User).where(User.username == user.username),
+                )
+                user = result.fetchone()
+                await connection.commit()
+
+                logger.info(f"User {user[0]} created successfully")
+                return user
+            except IntegrityError:
+                logger.warning(f"User {user} already exists")
+                raise EntityIntegrityError(entity="User")
+            except Exception as e:
+                logger.error(f"Error creating user: {e=}")
+                raise e
 
     async def update(self, user: User):
         async with self.db.engine.begin() as connection:
@@ -55,7 +72,7 @@ class UserRepository:
             await connection.execute(
                 update(User)
                 .where(User.id == user_id)
-                .values(last_active=datetime.now())
+                .values(last_active=datetime.now(timezone.utc)),
             )
             await connection.commit()
             logger.info(f"User {user_id} updated successfully")
@@ -67,7 +84,7 @@ class UserRepository:
             )
             return result.fetchone()
 
-    async def login(self, user: OAuth2PasswordRequestForm):
+    async def login(self, user: OAuth2PasswordRequestForm) -> dict:
         async with self.db.engine.begin() as connection:
             stmt = select(User).where(User.username == user.username)
             result = await connection.execute(stmt)
@@ -83,4 +100,4 @@ class UserRepository:
 
             await connection.rollback()
             logger.error("Incorrect combination of email and password")
-            return
+            return _user._asdict()

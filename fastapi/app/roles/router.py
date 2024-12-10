@@ -1,15 +1,21 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.exceptions import (
+    EntityIntegrityError,
+    EntityNotFoundError,
+    NotEnoughPermissionsError,
+)
+from app.permissions.utils import check_permissions
 from app.roles.models import (
     AllRolesResponseModel,
     RoleCreateModel,
@@ -17,6 +23,7 @@ from app.roles.models import (
     RoleUpdateModel,
 )
 from app.roles.repository import RoleRepository
+from app.users.utils import get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/role", tags=["Role"])
 
@@ -26,7 +33,15 @@ router = APIRouter(prefix="/api/v1/role", tags=["Role"])
     response_model=RoleResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_role(role: RoleCreateModel):
+async def create_role(
+    role: RoleCreateModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["create_role"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = RoleRepository()
         new_role = await repo.create(role)
@@ -44,7 +59,14 @@ async def create_role(role: RoleCreateModel):
     response_model=AllRolesResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_all_roles():
+async def get_all_roles(
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_role"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = RoleRepository()
         all_roles = await repo.get_all()
@@ -59,7 +81,15 @@ async def get_all_roles():
     response_model=RoleResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_role_by_id(id: int):
+async def get_role_by_id(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_role"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = RoleRepository()
         role = await repo.get_by_id(id)
@@ -76,7 +106,16 @@ async def get_role_by_id(id: int):
     response_model=RoleResponseModel,
     status_code=HTTP_200_OK,
 )
-async def update_role(id: int, role: RoleUpdateModel):
+async def update_role(
+    id: int,
+    role: RoleUpdateModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["update_role"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = RoleRepository()
         role = await repo.update(id, role)

@@ -1,36 +1,35 @@
-from datetime import datetime
-from typing import Optional
+from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime, timezone
 
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
+from app.config import Base
 
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
+class User(Base):
+    __tablename__ = "users"
 
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    username: str = Column(String(255), unique=True, nullable=False)
+    password: str = Column(String(255), nullable=False)
+    email: str = Column(String(255), unique=True, nullable=True)
+    full_name: str = Column(String(255), nullable=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    phone: str = Column(String(255), nullable=True)
+    address: str = Column(String(255), nullable=True)
+    created_at: datetime = Column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc)
+    )
+    is_internal_user: bool = Column(Boolean, default=False)
+    date_joined: datetime = Column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc)
+    )
+    last_active: datetime = Column(
+        DateTime(timezone=True),
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
+    )
 
-class UserLoginResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class UserRead(BaseModel):
-    id: int
-    username: str
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    is_internal_user: bool
-    date_joined: datetime
-    last_active: datetime
-    model_config = ConfigDict(from_attributes=True)
+    role = relationship("Role", back_populates="users")

@@ -12,3 +12,9 @@ class EntityNotFoundError(Exception):
     ) -> None:
         self.message = message.format(entity if entity else "Entity")
         super().__init__(self.message)
+
+
+class NotEnoughPermissionsError(Exception):
+    def __init__(self, message: str = "Not enough permissions"):
+        self.message = message
+        super().__init__(self.message)

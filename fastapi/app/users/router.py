@@ -16,8 +16,8 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
+from app.users.models import UserCreate, UserLoginResponse, UserRead, UserRoles
 from app.users.repository import UserRepository
-from app.users.schema import UserCreate, UserLoginResponse, UserRead
 from app.users.utils import create_access_token, get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
@@ -27,6 +27,11 @@ router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 async def create_user(user: UserCreate):
     try:
         user_repo = UserRepository()
+        if user.role not in [UserRoles.CUSTOMER, UserRoles.SELLER]:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail="Invalid role",
+            )
         _user = await user_repo.create(user)
         return UserRead.model_validate(_user)
     except IntegrityError as e:

@@ -19,6 +19,7 @@ from app.roles.router import router as roles_router
 from app.roles.seeder import Seeder as RoleSeeder
 from app.subcategories.router import router as subcategory_router
 from app.users.router import router as users_router
+from app.users.seeder import Seeder as UserSeeder
 
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ async def lifespan(app):
     logger.info("Seeding database")
     await PermissionSeeder().run()
     await RoleSeeder().run()
+    await UserSeeder().run()
 
     os.makedirs(SHARED_FOLDER, exist_ok=True)
     os.makedirs(f"{SHARED_FOLDER}/db", exist_ok=True)

@@ -1,21 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.exceptions import (
+    EntityIntegrityError,
+    EntityNotFoundError,
+    NotEnoughPermissionsError,
+)
 from app.permissions.models import (
     AllPermissionsResponseModel,
     PermissionCreateModel,
     PermissionResponseModel,
 )
 from app.permissions.repository import PermissionRepository
+from app.permissions.utils import check_permissions
+from app.users.utils import get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
 
@@ -25,7 +32,15 @@ router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
     response_model=PermissionResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_permission(permission: PermissionCreateModel):
+async def create_permission(
+    permission: PermissionCreateModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["create_permission"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = PermissionRepository()
         new_permission = await repo.create(permission)
@@ -44,7 +59,13 @@ async def create_permission(permission: PermissionCreateModel):
     response_model=AllPermissionsResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_all_permissions():
+async def get_all_permissions(
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_permission"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
     try:
         repo = PermissionRepository()
         all_permissions = await repo.get_all()
@@ -59,7 +80,14 @@ async def get_all_permissions():
     response_model=PermissionResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_permission_by_id(id: int):
+async def get_permission_by_id(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_permission"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
     try:
         repo = PermissionRepository()
         permission = await repo.get_by_id(id)

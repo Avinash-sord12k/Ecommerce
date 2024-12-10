@@ -1,22 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.exceptions import (
+    EntityIntegrityError,
+    EntityNotFoundError,
+    NotEnoughPermissionsError,
+)
+from app.permissions.utils import check_permissions
 from app.products.models import (
     CreateProductRequestModel,
     ProductResponseModel,
     UpdateProductRequestModel,
 )
 from app.products.repository import ProductRepository
+from app.users.utils import get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 
@@ -26,7 +32,15 @@ router = APIRouter(prefix="/api/v1/product", tags=["Product"])
     response_model=ProductResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_product(product: CreateProductRequestModel):
+async def create_product(
+    product: CreateProductRequestModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["create_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         new_product_id = await repo.create(product)
@@ -47,7 +61,15 @@ async def create_product(product: CreateProductRequestModel):
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_product_by_id(id: int):
+async def get_product_by_id(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         product = await repo.get_by_id(id)
@@ -65,7 +87,15 @@ async def get_product_by_id(id: int):
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_product_by_category_id(category_id: int):
+async def get_product_by_category_id(
+    category_id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         products = await repo.get_by_category_id(category_id)
@@ -83,7 +113,15 @@ async def get_product_by_category_id(category_id: int):
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_product_by_sub_category_id(sub_category_id: int):
+async def get_product_by_sub_category_id(
+    sub_category_id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         products = await repo.get_by_subcategory_id(sub_category_id)
@@ -101,7 +139,16 @@ async def get_product_by_sub_category_id(sub_category_id: int):
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
 )
-async def update_product(id: int, product: UpdateProductRequestModel):
+async def update_product(
+    id: int,
+    product: UpdateProductRequestModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["update_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         product = await repo.update(id, product)
@@ -117,7 +164,15 @@ async def update_product(id: int, product: UpdateProductRequestModel):
 @router.delete(
     "/{id}", response_model=ProductResponseModel, status_code=HTTP_200_OK
 )
-async def delete_product(id: int):
+async def delete_product(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["delete_product"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductRepository()
         product = await repo.delete(id)

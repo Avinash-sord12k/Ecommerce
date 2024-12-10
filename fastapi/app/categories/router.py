@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
@@ -15,7 +16,13 @@ from app.categories.models import (
     CategoryResponseModel,
 )
 from app.categories.repository import ProductCategoryRepository
-from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.exceptions import (
+    EntityIntegrityError,
+    EntityNotFoundError,
+    NotEnoughPermissionsError,
+)
+from app.permissions.utils import check_permissions
+from app.users.utils import get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])
 
@@ -24,20 +31,16 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
     "/create",
     response_model=CategoryResponseModel,
     status_code=HTTP_201_CREATED,
-    responses={
-        400: {
-            "description": "Category with this name already exists.",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "detail": "Category with this name already exists."
-                    }
-                }
-            },
-        }
-    },
 )
-async def create_category(category: CategoryCreateModel):
+async def create_category(
+    category: CategoryCreateModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["create_category"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductCategoryRepository()
         new_category = await repo.create(category)
@@ -54,7 +57,15 @@ async def create_category(category: CategoryCreateModel):
     response_model=CategoryResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_category_by_id(id: int):
+async def get_category_by_id(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_category"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductCategoryRepository()
         category = await repo.get_by_id(id)
@@ -70,26 +81,15 @@ async def get_category_by_id(id: int):
     "/get-all",
     response_model=AllCategoriesResponseModel,
     status_code=HTTP_200_OK,
-    responses={
-        404: {
-            "description": "No categories found.",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "No categories found."}
-                }
-            },
-        },
-        500: {
-            "description": "Internal server error.",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Internal server error."}
-                }
-            },
-        },
-    },
 )
-async def get_category():
+async def get_category(
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_category"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductCategoryRepository()
         all_categories = await repo.get_all()
@@ -107,7 +107,15 @@ async def get_category():
 @router.delete(
     "/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK
 )
-async def delete_category(id: int):
+async def delete_category(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["delete_category"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     if not isinstance(id, int):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="Invalid ID"

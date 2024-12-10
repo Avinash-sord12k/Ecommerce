@@ -1,21 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.exceptions import (
+    EntityIntegrityError,
+    EntityNotFoundError,
+    NotEnoughPermissionsError,
+)
+from app.permissions.utils import check_permissions
 from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
     SubCategoryResponseModel,
 )
 from app.subcategories.repository import ProductSubCategoryRepository
+from app.users.utils import get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
 
@@ -25,7 +32,15 @@ router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
     response_model=SubCategoryResponseModel,
     status_code=HTTP_201_CREATED,
 )
-async def create_sub_category(sub_category: SubCategoryCreateModel):
+async def create_sub_category(
+    sub_category: SubCategoryCreateModel,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["create_subcategory"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductSubCategoryRepository()
         new_sub_category = await repo.create(sub_category)
@@ -45,7 +60,15 @@ async def create_sub_category(sub_category: SubCategoryCreateModel):
     response_model=SubCategoryResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_sub_category_by_id(id: int):
+async def get_sub_category_by_id(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_subcategory"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductSubCategoryRepository()
         sub_category = await repo.get_by_id(id)
@@ -62,7 +85,14 @@ async def get_sub_category_by_id(id: int):
     response_model=AllSubCategoriesResponseModel,
     status_code=HTTP_200_OK,
 )
-async def get_sub_category():
+async def get_sub_category(
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["read_subcategory"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         repo = ProductSubCategoryRepository()
         all_sub_categories = await repo.get_all()
@@ -80,7 +110,15 @@ async def get_sub_category():
 @router.delete(
     "/{id}", response_model=SubCategoryResponseModel, status_code=HTTP_200_OK
 )
-async def delete_sub_category(id: int):
+async def delete_sub_category(
+    id: int,
+    user_id: str = Depends(get_user_id_from_token),
+):
+    try:
+        await check_permissions(user_id, required_roles=["delete_subcategory"])
+    except NotEnoughPermissionsError as e:
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+
     try:
         logger.info(f"Deleting sub-category with ID: {id}")
         repo = ProductSubCategoryRepository()

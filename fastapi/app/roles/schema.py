@@ -12,6 +12,8 @@ class Role(Base):
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(255), nullable=True)
 
+    users = relationship("User", back_populates="role")
+
     permissions = relationship(
         "Permission",
         secondary=role_permission_association,
