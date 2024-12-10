@@ -10,14 +10,32 @@ class Seeder(object):
     TABLE_NAME = User.__tablename__
     VALUES = [
         UserCreate(
-            username="ashishk2004a",
-            password="dummypassword123",
-            email="ashishk2004a@gmail.com",
-            full_name="Ashish Kumar Jha",
-            phone="8700745195",
+            username="admin",
+            password="admin123",
+            email="admin@gmail.com",
+            full_name="Admin",
+            phone="8700645195",
             role="admin",
             address="Basically heaven, Earth, Milkyway",
-        )
+        ),
+        UserCreate(
+            username="customer",
+            password="customer123",
+            email="customer@gmail.com",
+            full_name="Customer",
+            phone="8700635185",
+            role="customer",
+            address="Basically heaven, Cool planet, Andromeda",
+        ),
+        UserCreate(
+            username="seller",
+            password="seller123",
+            email="seller@gmail.com",
+            full_name="Seller",
+            phone="8700725185",
+            role="seller",
+            address="Basically heaven, Cool planet, Cygnus A",
+        ),
     ]
 
     @staticmethod
