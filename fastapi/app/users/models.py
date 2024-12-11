@@ -9,6 +9,7 @@ class UserRoles(Enum):
     ADMIN = "admin"
     CUSTOMER = "customer"
     SELLER = "seller"
+    TESTER = "tester"
 
 
 class UserCreate(BaseModel):

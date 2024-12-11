@@ -13,4 +13,8 @@ PERMISSIONS = [
         name="update_role",
         description="Update a role",
     ),
+    PermissionCreateModel(
+        name="delete_role",
+        description="Delete a role",
+    ),
 ]

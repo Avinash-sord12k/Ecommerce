@@ -36,13 +36,13 @@ def product_data():
 
 @pytest_asyncio.fixture(scope="module")
 async def category(
-    client: AsyncClient, category_data: dict, admin_access_token: str
+    client: AsyncClient, category_data: dict, tester_access_token: str
 ):
     # Create category
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
@@ -54,7 +54,7 @@ async def category(
     # Cleanup: Delete category
     response = await client.delete(
         f"/api/v1/category/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
@@ -66,14 +66,14 @@ async def sub_category(
     client: AsyncClient,
     category: str,
     sub_category_data: dict,
-    admin_access_token: str,
+    tester_access_token: str,
 ):
     # Create subcategory
     sub_category_data["category_id"] = category
     response = await client.post(
         "/api/v1/subcategory/create",
         json=sub_category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
@@ -85,7 +85,7 @@ async def sub_category(
     # Cleanup: Delete subcategory
     response = await client.delete(
         f"/api/v1/subcategory/{subcategory_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK

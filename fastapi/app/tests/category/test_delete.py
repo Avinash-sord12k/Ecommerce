@@ -12,13 +12,13 @@ from starlette.status import (
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_delete_category(
-    client: AsyncClient, category_data: dict, admin_access_token: str
+    client: AsyncClient, category_data: dict, tester_access_token: str
 ):
     # Create category
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -30,7 +30,7 @@ async def test_delete_category(
     # Delete category
     response = await client.delete(
         f"/api/v1/category/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -68,13 +68,13 @@ async def test_delete_category_without_enough_permissions(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_delete_nonexistent_category(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     # Try to delete a category that does not exist
     non_existent_category_id = 99999  # Assuming 99999 doesn't exist
     response = await client.delete(
         f"/api/v1/category/{non_existent_category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -83,13 +83,13 @@ async def test_delete_nonexistent_category(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_delete_invalid_category_id(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     # Try to delete a category with an invalid ID (e.g., a string instead of an integer)
     invalid_category_id = "invalid_id"
     response = await client.delete(
         f"/api/v1/category/{invalid_category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)

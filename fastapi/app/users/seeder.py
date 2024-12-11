@@ -36,6 +36,15 @@ class Seeder(object):
             role="seller",
             address="Basically heaven, Cool planet, Cygnus A",
         ),
+        UserCreate(
+            username="tester",
+            password="tester123",
+            email="tester@gmail.com",
+            full_name="Tester",
+            phone="8700645195",
+            role="tester",
+            address="Basically heaven, Earth, Milkyway",
+        ),
     ]
 
     @staticmethod

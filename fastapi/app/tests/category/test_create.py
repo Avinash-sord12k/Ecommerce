@@ -11,12 +11,12 @@ from starlette.status import (
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_category(
-    client: AsyncClient, category_data: dict, admin_access_token: str
+    client: AsyncClient, category_data: dict, tester_access_token: str
 ):
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -26,7 +26,7 @@ async def test_create_category(
     category_id = response_json["id"]
     response = await client.delete(
         f"/api/v1/category/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
@@ -61,13 +61,13 @@ async def test_create_category_without_enough_permissions(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_category_missing_name(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     category_data = {"name": ""}
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -76,13 +76,13 @@ async def test_create_category_missing_name(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_category_invalid_data(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     category_data = {"name": 12345}  # Invalid data type for name
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)

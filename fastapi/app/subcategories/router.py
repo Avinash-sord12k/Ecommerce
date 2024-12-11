@@ -15,14 +15,14 @@ from app.exceptions import (
     EntityNotFoundError,
     NotEnoughPermissionsError,
 )
-from app.permissions.utils import check_permissions
+from app.permissions.utils import allowed_permissions
 from app.subcategories.models import (
     AllSubCategoriesResponseModel,
     SubCategoryCreateModel,
     SubCategoryResponseModel,
 )
 from app.subcategories.repository import ProductSubCategoryRepository
-from app.users.utils import get_user_id_from_token
+from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
 
@@ -31,18 +31,12 @@ router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
     "/create",
     response_model=SubCategoryResponseModel,
     status_code=HTTP_201_CREATED,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["create_subcategory"])),
+    ],
 )
-async def create_sub_category(
-    sub_category: SubCategoryCreateModel,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["create_subcategory"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def create_sub_category(sub_category: SubCategoryCreateModel):
     try:
         repo = ProductSubCategoryRepository()
         new_sub_category = await repo.create(sub_category)
@@ -61,18 +55,12 @@ async def create_sub_category(
     "/get-by-id/{id}",
     response_model=SubCategoryResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_subcategory"])),
+    ],
 )
-async def get_sub_category_by_id(
-    id: int,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_subcategory"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def get_sub_category_by_id(id: int):
     try:
         repo = ProductSubCategoryRepository()
         sub_category = await repo.get_by_id(id)
@@ -88,17 +76,12 @@ async def get_sub_category_by_id(
     "/get-all",
     response_model=AllSubCategoriesResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_subcategory"])),
+    ],
 )
-async def get_sub_category(
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_subcategory"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def get_sub_category():
     try:
         repo = ProductSubCategoryRepository()
         all_sub_categories = await repo.get_all()
@@ -114,19 +97,15 @@ async def get_sub_category(
 
 
 @router.delete(
-    "/{id}", response_model=SubCategoryResponseModel, status_code=HTTP_200_OK
+    "/{id}",
+    response_model=SubCategoryResponseModel,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["delete_subcategory"])),
+    ],
 )
-async def delete_sub_category(
-    id: int,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["delete_subcategory"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def delete_sub_category(id: int):
     try:
         logger.info(f"Deleting sub-category with ID: {id}")
         repo = ProductSubCategoryRepository()

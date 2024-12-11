@@ -12,13 +12,13 @@ def category_data():
 
 @pytest_asyncio.fixture(scope="module")
 async def category_id(
-    client: AsyncClient, category_data: dict, admin_access_token: str
+    client: AsyncClient, category_data: dict, tester_access_token: str
 ):
     # Create category
     response = await client.post(
         "/api/v1/category/create",
         json=category_data,
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     category_id = response_json["id"]
@@ -27,7 +27,7 @@ async def category_id(
     # Delete category
     response = await client.delete(
         f"/api/v1/category/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     return

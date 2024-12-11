@@ -19,9 +19,15 @@ def sub_category_data():
 
 
 @pytest.fixture(scope="module")
-async def category(client: AsyncClient, category_data: dict):
+async def category(
+    client: AsyncClient, category_data: dict, tester_access_token: str
+):
     # Create category
-    response = await client.post("/api/v1/category/create", json=category_data)
+    response = await client.post(
+        "/api/v1/category/create",
+        json=category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
     assert response_json["name"] == category_data["name"]
@@ -30,7 +36,10 @@ async def category(client: AsyncClient, category_data: dict):
     yield category_id  # Return the category ID to the test
 
     # Cleanup: Delete category
-    response = await client.delete(f"/api/v1/category/{category_id}")
+    response = await client.delete(
+        f"/api/v1/category/{category_id}",
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == category_id

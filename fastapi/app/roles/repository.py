@@ -130,14 +130,16 @@ class RoleRepository:
                 permission_ids=role_update.permission_ids,
             ).model_dump()
 
-    async def associate_permission(self, role_id: int, permission: str):
+    async def associate_permission(self, role: int, permission: str):
         async with self.db.engine.begin() as connection:
             try:
-                # Check if the role exists
-                q = select(Role).where(Role.id == role_id)
-                result = await connection.execute(q)
-                if not result.scalar():
+                # Get the role id from role name
+                q = select(Role).where(Role.name == role)
+                result = (await connection.execute(q)).fetchone()
+                if not result:
                     raise EntityNotFoundError(entity="Role")
+
+                role_id = result[0]
 
                 # Get permission id from permission name
                 q = select(Permission).where(Permission.name == permission)
@@ -168,4 +170,23 @@ class RoleRepository:
                 logger.error(
                     f"Error creating role permission association: {e=}"
                 )
+                raise e
+
+    async def delete(self, id: int):
+        async with self.db.engine.begin() as connection:
+            try:
+                q = select(Role).where(Role.id == id)
+                result = await connection.execute(q)
+                if not result.scalar():
+                    raise EntityNotFoundError(entity="Role")
+
+                q = delete(Role).where(Role.id == id)
+                await connection.execute(q)
+                await connection.commit()
+                return True
+            except EntityNotFoundError as e:
+                logger.error(f"Error deleting role: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error deleting role: {e=}")
                 raise e

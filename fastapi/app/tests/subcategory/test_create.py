@@ -12,12 +12,17 @@ from starlette.status import (
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category(
-    client: AsyncClient, category: str, sub_category_data: dict
+    client: AsyncClient,
+    category: str,
+    sub_category_data: dict,
+    tester_access_token: str,
 ):
     # Create subcategory
     sub_category_data["category_id"] = category
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -27,7 +32,10 @@ async def test_create_sub_category(
     subcategory_id = response_json["id"]
 
     # Delete subcategory
-    response = await client.delete(f"/api/v1/subcategory/{subcategory_id}")
+    response = await client.delete(
+        f"/api/v1/subcategory/{subcategory_id}",
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
     response_json = response.json()
     logger.debug(response_json)
     assert response.status_code == HTTP_200_OK
@@ -36,12 +44,14 @@ async def test_create_sub_category(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category_with_nonexistent_category(
-    client: AsyncClient, sub_category_data: dict
+    client: AsyncClient, sub_category_data: dict, tester_access_token: str
 ):
     nonexistent_category_id = 99999  # Assuming 99999 doesn't exist
     sub_category_data["category_id"] = nonexistent_category_id
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -50,12 +60,14 @@ async def test_create_sub_category_with_nonexistent_category(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category_with_invalid_category_id(
-    client: AsyncClient, sub_category_data: dict
+    client: AsyncClient, sub_category_data: dict, tester_access_token: str
 ):
     invalid_category_id = "invalid_id"
     sub_category_data["category_id"] = invalid_category_id
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -64,12 +76,14 @@ async def test_create_sub_category_with_invalid_category_id(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_sub_category_without_required_fields(
-    client: AsyncClient, category: str
+    client: AsyncClient, category: str, tester_access_token: str
 ):
     # Try to create subcategory without a name (missing required field)
     sub_category_data = {"category_id": category}  # Missing 'name' field
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -81,11 +95,14 @@ async def test_create_sub_category_with_duplicate_name(
     client: AsyncClient,
     category: str,
     sub_category_data: dict,
+    tester_access_token: str,
 ):
     # Create the first subcategory
     sub_category_data["category_id"] = category
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -96,14 +113,19 @@ async def test_create_sub_category_with_duplicate_name(
     subcategory_id = response_json["id"]
     sub_category_data["name"] = sub_category_data["name"]  # Same name
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
     assert response.status_code == HTTP_400_BAD_REQUEST
 
     # delete subcategory
-    response = await client.delete(f"/api/v1/subcategory/{subcategory_id}")
+    response = await client.delete(
+        f"/api/v1/subcategory/{subcategory_id}",
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id

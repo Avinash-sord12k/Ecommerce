@@ -5,7 +5,6 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
@@ -16,13 +15,9 @@ from app.categories.models import (
     CategoryResponseModel,
 )
 from app.categories.repository import ProductCategoryRepository
-from app.exceptions import (
-    EntityIntegrityError,
-    EntityNotFoundError,
-    NotEnoughPermissionsError,
-)
-from app.permissions.utils import check_permissions
-from app.users.utils import get_user_id_from_token
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.permissions.utils import allowed_permissions
+from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])
 
@@ -31,18 +26,12 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
     "/create",
     response_model=CategoryResponseModel,
     status_code=HTTP_201_CREATED,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["create_category"])),
+    ],
 )
-async def create_category(
-    category: CategoryCreateModel,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["create_category"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def create_category(category: CategoryCreateModel):
     try:
         repo = ProductCategoryRepository()
         new_category = await repo.create(category)
@@ -61,18 +50,12 @@ async def create_category(
     "/get-by-id/{id}",
     response_model=CategoryResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_category"])),
+    ],
 )
-async def get_category_by_id(
-    id: int,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_category"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def get_category_by_id(id: int):
     try:
         repo = ProductCategoryRepository()
         category = await repo.get_by_id(id)
@@ -88,17 +71,12 @@ async def get_category_by_id(
     "/get-all",
     response_model=AllCategoriesResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_category"])),
+    ],
 )
-async def get_category(
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_category"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def get_category():
     try:
         repo = ProductCategoryRepository()
         all_categories = await repo.get_all()
@@ -114,19 +92,15 @@ async def get_category(
 
 
 @router.delete(
-    "/{id}", response_model=CategoryResponseModel, status_code=HTTP_200_OK
+    "/{id}",
+    response_model=CategoryResponseModel,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["delete_category"])),
+    ],
 )
-async def delete_category(
-    id: int,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["delete_category"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def delete_category(id: int):
     if not isinstance(id, int):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="Invalid ID"

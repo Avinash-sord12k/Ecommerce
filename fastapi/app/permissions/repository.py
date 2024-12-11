@@ -1,5 +1,5 @@
 from loguru import logger
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, delete
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DatabaseManager
@@ -61,3 +61,22 @@ class PermissionRepository:
                 raise EntityNotFoundError(entity="Permission")
 
             return permission._asdict()
+
+    async def delete(self, id: int):
+        async with self.db.engine.begin() as connection:
+            try:
+                q = select(Permission).where(Permission.id == id)
+                result = await connection.execute(q)
+                if not result.fetchone():
+                    raise EntityNotFoundError(entity="Permission")
+
+                q = delete(Permission).where(Permission.id == id)
+                await connection.execute(q)
+                await connection.commit()
+                return True
+            except EntityNotFoundError as e:
+                logger.error(f"Error deleting permission: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error deleting permission: {e=}")
+                raise e

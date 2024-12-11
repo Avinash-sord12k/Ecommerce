@@ -5,24 +5,19 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import (
-    EntityIntegrityError,
-    EntityNotFoundError,
-    NotEnoughPermissionsError,
-)
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.models import (
     AllPermissionsResponseModel,
     PermissionCreateModel,
     PermissionResponseModel,
 )
 from app.permissions.repository import PermissionRepository
-from app.permissions.utils import check_permissions
-from app.users.utils import get_user_id_from_token
+from app.permissions.utils import allowed_permissions
+from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
 
@@ -31,18 +26,12 @@ router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
     "/create",
     response_model=PermissionResponseModel,
     status_code=HTTP_201_CREATED,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["create_permission"])),
+    ],
 )
-async def create_permission(
-    permission: PermissionCreateModel,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["create_permission"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
-
+async def create_permission(permission: PermissionCreateModel):
     try:
         repo = PermissionRepository()
         new_permission = await repo.create(permission)
@@ -60,16 +49,12 @@ async def create_permission(
     "/get-all",
     response_model=AllPermissionsResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_permission"])),
+    ],
 )
-async def get_all_permissions(
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_permission"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+async def get_all_permissions():
     try:
         repo = PermissionRepository()
         all_permissions = await repo.get_all()
@@ -83,17 +68,12 @@ async def get_all_permissions(
     "/get-by-id/{id}",
     response_model=PermissionResponseModel,
     status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["read_permission"])),
+    ],
 )
-async def get_permission_by_id(
-    id: int,
-    user_id: str = Depends(get_user_id_from_token),
-):
-    try:
-        await check_permissions(
-            user_id, required_permissions=["read_permission"]
-        )
-    except NotEnoughPermissionsError as e:
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
+async def get_permission_by_id(id: int):
     try:
         repo = PermissionRepository()
         permission = await repo.get_by_id(id)
@@ -102,4 +82,24 @@ async def get_permission_by_id(
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting permission by id: {e=}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.delete(
+    "/{id}",
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(oauth2scheme),
+        Depends(allowed_permissions(["delete_permission"])),
+    ],
+)
+async def delete_permission(id: int):
+    try:
+        repo = PermissionRepository()
+        await repo.delete(id)
+        return JSONResponse(content={}, status_code=HTTP_200_OK)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting permission: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)

@@ -12,14 +12,14 @@ from starlette.status import (
 async def test_get_product_by_category_id(
     client: AsyncClient,
     product: dict,
-    admin_access_token: str,
+    tester_access_token: str,
 ):
     product_id = product["id"]
     category_id = product["category_id"]
 
     response = await client.get(
         f"/api/v1/product/get-by-category-id/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -29,12 +29,12 @@ async def test_get_product_by_category_id(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_product_by_invalid_category_id(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     category_id = "12345"  # Assuming this is an invalid category ID
     response = await client.get(
         f"/api/v1/product/get-by-category-id/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -43,12 +43,12 @@ async def test_get_product_by_invalid_category_id(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_product_by_non_existent_category_id(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     category_id = 12345  # Assuming this is a non-existent category ID
     response = await client.get(
         f"/api/v1/product/get-by-category-id/{category_id}",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -57,11 +57,11 @@ async def test_get_product_by_non_existent_category_id(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_product_by_category_id_without_category_id(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     response = await client.get(
         "/api/v1/product/get-by-category-id",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -70,11 +70,11 @@ async def test_get_product_by_category_id_without_category_id(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_product_by_category_id_without_id(
-    client: AsyncClient, admin_access_token: str
+    client: AsyncClient, tester_access_token: str
 ):
     response = await client.get(
         "/api/v1/product/get-by-category-id",
-        headers={"Authorization": f"Bearer {admin_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)

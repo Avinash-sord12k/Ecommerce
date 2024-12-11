@@ -41,3 +41,10 @@ async def seller_access_token(client: AsyncClient):
     login_data = {"username": "seller", "password": "seller123"}
     response = await client.post("/api/v1/users/login", data=login_data)
     return response.json()["access_token"]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def tester_access_token(client: AsyncClient):
+    login_data = {"username": "tester", "password": "tester123"}
+    response = await client.post("/api/v1/users/login", data=login_data)
+    return response.json()["access_token"]
