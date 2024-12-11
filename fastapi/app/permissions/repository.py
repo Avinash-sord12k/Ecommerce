@@ -1,5 +1,5 @@
 from loguru import logger
-from sqlalchemy import insert, select, delete
+from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DatabaseManager

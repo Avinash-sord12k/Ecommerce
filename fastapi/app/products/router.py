@@ -10,10 +10,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.exceptions import (
-    EntityIntegrityError,
-    EntityNotFoundError,
-)
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.utils import allowed_permissions
 from app.products.models import (
     CreateProductRequestModel,

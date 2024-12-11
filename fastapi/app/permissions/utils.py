@@ -1,13 +1,14 @@
 from functools import wraps
+
+from fastapi import Depends, HTTPException
 from loguru import logger
 from sqlalchemy import select
 from starlette.status import HTTP_403_FORBIDDEN
-from fastapi import HTTPException, Depends
 
-from app.exceptions import EntityNotFoundError, NotEnoughPermissionsError
 from app.database import DatabaseManager
+from app.exceptions import EntityNotFoundError, NotEnoughPermissionsError
+from app.permissions.schema import Permission, role_permission_association
 from app.users.schema import User
-from app.permissions.schema import role_permission_association, Permission
 from app.users.utils import get_user_id_from_token
 
 
