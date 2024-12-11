@@ -37,7 +37,9 @@ async def create_sub_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["create_subcategory"])
+        await check_permissions(
+            user_id, required_permissions=["create_subcategory"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -65,7 +67,9 @@ async def get_sub_category_by_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_subcategory"])
+        await check_permissions(
+            user_id, required_permissions=["read_subcategory"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -89,7 +93,9 @@ async def get_sub_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_subcategory"])
+        await check_permissions(
+            user_id, required_permissions=["read_subcategory"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -115,7 +121,9 @@ async def delete_sub_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["delete_subcategory"])
+        await check_permissions(
+            user_id, required_permissions=["delete_subcategory"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 

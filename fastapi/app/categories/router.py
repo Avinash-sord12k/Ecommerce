@@ -37,7 +37,9 @@ async def create_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["create_category"])
+        await check_permissions(
+            user_id, required_permissions=["create_category"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -50,6 +52,9 @@ async def create_category(
             status_code=HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
+    except Exception as e:
+        logger.error(f"Error creating category: {e=}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.get(
@@ -62,7 +67,9 @@ async def get_category_by_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_category"])
+        await check_permissions(
+            user_id, required_permissions=["read_category"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -86,7 +93,9 @@ async def get_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_category"])
+        await check_permissions(
+            user_id, required_permissions=["read_category"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -112,7 +121,9 @@ async def delete_category(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["delete_category"])
+        await check_permissions(
+            user_id, required_permissions=["delete_category"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 

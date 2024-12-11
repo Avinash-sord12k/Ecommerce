@@ -37,7 +37,9 @@ async def create_permission(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["create_permission"])
+        await check_permissions(
+            user_id, required_permissions=["create_permission"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -63,7 +65,9 @@ async def get_all_permissions(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_permission"])
+        await check_permissions(
+            user_id, required_permissions=["read_permission"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
     try:
@@ -85,7 +89,9 @@ async def get_permission_by_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_permission"])
+        await check_permissions(
+            user_id, required_permissions=["read_permission"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
     try:

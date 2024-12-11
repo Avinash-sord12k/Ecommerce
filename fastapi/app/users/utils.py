@@ -52,25 +52,4 @@ def get_user_id_from_token(token: str = Depends(oauth2scheme)):
         return None
     except Exception as e:
         logger.error(f"Error getting user id from token: {e=}")
-
-
-def get_role_from_token(token: str = Depends(oauth2scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[HASHING_ALGORITHM])
-        if role := payload["role"]:
-            return role
-
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
-    except jwt.ExpiredSignatureError as e:
-        logger.error(f"Token expired: {e=}")
         return None
-    except jwt.InvalidTokenError as e:
-        logger.error(f"Invalid token: {e=}")
-        return None
-    except jwt.InvalidSignatureError as e:
-        logger.error(f"Invalid signature: {e=}")
-        return None
-    except Exception as e:
-        logger.error(f"Error getting role from token: {e=}")

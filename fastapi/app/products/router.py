@@ -37,7 +37,9 @@ async def create_product(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["create_product"])
+        await check_permissions(
+            user_id, required_permissions=["create_product"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -66,7 +68,7 @@ async def get_product_by_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_product"])
+        await check_permissions(user_id, required_permissions=["read_product"])
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -92,7 +94,7 @@ async def get_product_by_category_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_product"])
+        await check_permissions(user_id, required_permissions=["read_product"])
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -118,7 +120,7 @@ async def get_product_by_sub_category_id(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["read_product"])
+        await check_permissions(user_id, required_permissions=["read_product"])
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -145,7 +147,9 @@ async def update_product(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["update_product"])
+        await check_permissions(
+            user_id, required_permissions=["update_product"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
@@ -169,7 +173,9 @@ async def delete_product(
     user_id: str = Depends(get_user_id_from_token),
 ):
     try:
-        await check_permissions(user_id, required_roles=["delete_product"])
+        await check_permissions(
+            user_id, required_permissions=["delete_product"]
+        )
     except NotEnoughPermissionsError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=str(e))
 
