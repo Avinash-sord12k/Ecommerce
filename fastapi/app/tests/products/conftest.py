@@ -1,6 +1,5 @@
 from uuid import uuid4
 
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
@@ -35,10 +34,16 @@ def product_data():
     }
 
 
-@pytest.fixture(scope="module")
-async def category(client: AsyncClient, category_data: dict):
+@pytest_asyncio.fixture(scope="module")
+async def category(
+    client: AsyncClient, category_data: dict, admin_access_token: str
+):
     # Create category
-    response = await client.post("/api/v1/category/create", json=category_data)
+    response = await client.post(
+        "/api/v1/category/create",
+        json=category_data,
+        headers={"Authorization": f"Bearer {admin_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
     assert response_json["name"] == category_data["name"]
@@ -47,20 +52,28 @@ async def category(client: AsyncClient, category_data: dict):
     yield category_id  # Return the category ID to the test
 
     # Cleanup: Delete category
-    response = await client.delete(f"/api/v1/category/{category_id}")
+    response = await client.delete(
+        f"/api/v1/category/{category_id}",
+        headers={"Authorization": f"Bearer {admin_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == category_id
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module")
 async def sub_category(
-    client: AsyncClient, category: str, sub_category_data: dict
+    client: AsyncClient,
+    category: str,
+    sub_category_data: dict,
+    admin_access_token: str,
 ):
     # Create subcategory
     sub_category_data["category_id"] = category
     response = await client.post(
-        "/api/v1/subcategory/create", json=sub_category_data
+        "/api/v1/subcategory/create",
+        json=sub_category_data,
+        headers={"Authorization": f"Bearer {admin_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
@@ -70,30 +83,42 @@ async def sub_category(
     yield category, subcategory_id  # Return the subcategory ID and category ID to the test
 
     # Cleanup: Delete subcategory
-    response = await client.delete(f"/api/v1/subcategory/{subcategory_id}")
+    response = await client.delete(
+        f"/api/v1/subcategory/{subcategory_id}",
+        headers={"Authorization": f"Bearer {admin_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == subcategory_id
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module")
 async def product(
-    client: AsyncClient, category: str, sub_category: tuple, product_data: dict
+    client: AsyncClient,
+    sub_category: tuple,
+    product_data: dict,
+    seller_access_token: str,
 ):
     category_id, subcategory_id = sub_category
     product_data["category_id"] = category_id
     product_data["sub_category_ids"] = [subcategory_id]
 
-    response = await client.post("/api/v1/product/create", json=product_data)
+    response = await client.post(
+        "/api/v1/product/create",
+        json=product_data,
+        headers={"Authorization": f"Bearer {seller_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
     assert response_json["name"] == product_data["name"]
-
-    product_id = response_json["id"]
-    yield product_id  # Return the product ID to the test
+    yield response_json
 
     # Cleanup: Delete product
-    response = await client.delete(f"/api/v1/product/{product_id}")
+    product_id = response_json["id"]
+    response = await client.delete(
+        f"/api/v1/product/{product_id}",
+        headers={"Authorization": f"Bearer {seller_access_token}"},
+    )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == product_id

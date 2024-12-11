@@ -20,3 +20,24 @@ async def client(lifespanned_app):
         base_url="http://0.0.0.0:5000",
     ) as _client:
         yield _client
+
+
+@pytest_asyncio.fixture(scope="session")
+async def admin_access_token(client: AsyncClient):
+    login_data = {"username": "admin", "password": "admin123"}
+    response = await client.post("/api/v1/users/login", data=login_data)
+    return response.json()["access_token"]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def customer_access_token(client: AsyncClient):
+    login_data = {"username": "customer", "password": "customer123"}
+    response = await client.post("/api/v1/users/login", data=login_data)
+    return response.json()["access_token"]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def seller_access_token(client: AsyncClient):
+    login_data = {"username": "seller", "password": "seller123"}
+    response = await client.post("/api/v1/users/login", data=login_data)
+    return response.json()["access_token"]
