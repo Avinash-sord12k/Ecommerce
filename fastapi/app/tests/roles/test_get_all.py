@@ -35,9 +35,19 @@ async def test_get_all_roles_no_admin(
         headers={"Authorization": f"Bearer {customer_access_token}"},
     )
     assert response.status_code == HTTP_200_OK
+    role_id = role["id"]
+    all_roles = response.json()["roles"]
+
+    matching_role = next((r for r in all_roles if r["id"] == role_id), None)
+    assert matching_role is not None
 
     response = await client.get(
         "/api/v1/role/get-all",
         headers={"Authorization": f"Bearer {seller_access_token}"},
     )
     assert response.status_code == HTTP_200_OK
+    role_id = role["id"]
+    all_roles = response.json()["roles"]
+
+    matching_role = next((r for r in all_roles if r["id"] == role_id), None)
+    assert matching_role is not None

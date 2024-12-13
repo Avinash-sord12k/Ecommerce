@@ -43,7 +43,6 @@ async def create_role(role: RoleCreateModel):
         new_role = await repo.create(role)
         return JSONResponse(content=new_role, status_code=HTTP_201_CREATED)
     except EntityIntegrityError as e:
-        logger.error(f"Role with name {role.name} already exists")
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating role: {e=}")

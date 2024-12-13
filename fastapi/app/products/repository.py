@@ -6,7 +6,6 @@ from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
 from app.products.models import (
     CreateProductRequestModel,
-    ProductResponseModel,
     UpdateProductRequestModel,
 )
 from app.products.schema import Product
@@ -18,7 +17,9 @@ class ProductRepository:
     def __init__(self):
         self.db = DatabaseManager._instance
 
-    async def create(self, product: CreateProductRequestModel) -> int:
+    async def create(
+        self, user_id: int, product: CreateProductRequestModel
+    ) -> int:
         async with self.db.engine.begin() as connection:
             # Check if the category exist
             category_repo = ProductCategoryRepository()
@@ -33,6 +34,7 @@ class ProductRepository:
             q = insert(Product).values(
                 name=product.name,
                 description=product.description,
+                user_id=user_id,
                 price=product.price,
                 slug=product.slug,
                 tags=product.tags,
@@ -102,7 +104,7 @@ class ProductRepository:
             await connection.commit()
             return product_update.model_dump()
 
-    async def get_by_id(self, product_id: int) -> ProductResponseModel:
+    async def get_by_id(self, product_id: int) -> dict:
         async with self.db.engine.begin() as connection:
             q = select(Product).where(Product.id == product_id)
             result = await connection.execute(q)
@@ -114,7 +116,7 @@ class ProductRepository:
 
     async def get_by_category_id(
         self, category_id: int, max_objects: int = 10
-    ) -> list[ProductResponseModel]:
+    ) -> list[dict]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)
@@ -130,7 +132,7 @@ class ProductRepository:
 
     async def get_by_category_name(
         self, category_name: str, max_objects: int = 10
-    ) -> list[ProductResponseModel]:
+    ) -> list[dict]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)
@@ -146,7 +148,7 @@ class ProductRepository:
 
     async def get_by_subcategory_id(
         self, sub_category_id: int, max_objects: int = 10
-    ) -> list[ProductResponseModel]:
+    ) -> list[dict]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(product_subcategory_association)
@@ -173,7 +175,7 @@ class ProductRepository:
 
     async def get_by_sub_category_name(
         self, sub_category_name: str, max_objects: int = 10
-    ) -> list[ProductResponseModel]:
+    ) -> list[dict]:
         async with self.db.engine.begin() as connection:
             q = (
                 select(Product)

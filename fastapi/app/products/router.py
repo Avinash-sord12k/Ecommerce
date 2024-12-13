@@ -5,7 +5,6 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
-    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
@@ -18,7 +17,7 @@ from app.products.models import (
     UpdateProductRequestModel,
 )
 from app.products.repository import ProductRepository
-from app.users.utils import oauth2scheme
+from app.users.utils import oauth2scheme, get_user_id_from_token
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 
@@ -32,16 +31,24 @@ router = APIRouter(prefix="/api/v1/product", tags=["Product"])
         Depends(allowed_permissions(["create_product"])),
     ],
 )
-async def create_product(product: CreateProductRequestModel):
+async def create_product(
+    product: CreateProductRequestModel,
+    user_id: int = Depends(get_user_id_from_token),
+):
     try:
         repo = ProductRepository()
-        new_product_id = await repo.create(product)
-        return ProductResponseModel(id=new_product_id, **product.model_dump())
+        new_product_id = await repo.create(user_id, product)
+        return JSONResponse(
+            content={
+                "id": new_product_id,
+                "user_id": user_id,
+                **product.model_dump(),
+            },
+            status_code=HTTP_201_CREATED,
+        )
     except EntityNotFoundError as e:
-        logger.error(f"Some dependency not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except EntityIntegrityError as e:
-        logger.error(f"Product or Dependency already exists: {e=}")
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating product: {e=}")
@@ -63,7 +70,6 @@ async def get_product_by_id(id: int):
         product = await repo.get_by_id(id)
         return JSONResponse(content=product, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
-        logger.error(f"Product not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting product by id: {e=}")
@@ -85,7 +91,6 @@ async def get_product_by_category_id(category_id: int):
         products = await repo.get_by_category_id(category_id)
         return JSONResponse(content=products, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
-        logger.error(f"Category not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting products by category: {e=}")
@@ -107,7 +112,6 @@ async def get_product_by_sub_category_id(sub_category_id: int):
         products = await repo.get_by_subcategory_id(sub_category_id)
         return JSONResponse(content=products, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
-        logger.error(f"Sub-category not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error getting products by sub-category id: {e=}")
@@ -129,7 +133,6 @@ async def update_product(id: int, product: UpdateProductRequestModel):
         product = await repo.update(id, product)
         return JSONResponse(content=product, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
-        logger.error(f"Product not found: {e=}")
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.error(f"Error updating product: {e=}")

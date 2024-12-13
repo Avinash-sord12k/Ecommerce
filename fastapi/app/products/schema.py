@@ -11,6 +11,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     description = Column(String(500), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     price = Column(Float, nullable=False, index=True)
     slug = Column(String(60), unique=True, nullable=False, index=True)
     tags = Column(String(255), nullable=True)
@@ -18,6 +19,9 @@ class Product(Base):
     stock = Column(Integer, nullable=False, default=0)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+
+    # One-to-many relationship with User
+    user = relationship("User", back_populates="products")
 
     # One-to-many relationship with Category
     category = relationship("Category", back_populates="products")

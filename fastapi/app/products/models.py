@@ -42,6 +42,14 @@ class CreateProductRequestModel(BaseModel):
     )
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("price")
+    def price_serializer(self, value: Decimal) -> str:
+        return str(value)
+
+    @field_serializer("discount")
+    def discount_serializer(self, value: Decimal) -> str:
+        return str(value)
+
 
 class ProductResponseModel(BaseModel):
     id: int = Field(..., description="The unique identifier of the product")
@@ -54,6 +62,7 @@ class ProductResponseModel(BaseModel):
     description: Optional[str] = Field(
         None, max_length=500, description="Product description"
     )
+    user_id: int = Field(..., description="ID of the user")
     price: Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)] = (
         Field(..., description="Price of the product")
     )

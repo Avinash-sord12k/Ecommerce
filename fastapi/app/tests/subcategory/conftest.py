@@ -6,13 +6,13 @@ from httpx import AsyncClient
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="module")
 def category_data():
     """Fixture to provide category data."""
     return {"name": str(uuid4())}
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="module")
 def sub_category_data():
     """Fixture to provide category data."""
     return {"name": str(uuid4())}
