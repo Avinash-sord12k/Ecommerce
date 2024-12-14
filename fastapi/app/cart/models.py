@@ -1,18 +1,39 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    field_serializer,
+)
 from typing import Optional
 
 from app.cart.schema import CartStatus
 
 
 class CreateCartRequestModel(BaseModel):
-    name: str = Field(..., description="Name of the cart")
-    reminder_date: Optional[datetime] = Field(
+    name: str = Field(
+        ..., min_length=3, max_length=50, description="Name of the cart"
+    )
+    remainder_date: Optional[datetime] = Field(
         None, description="Reminder date of the cart"
     )
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("remainder_date")
+    def serialize_reminder_date(self, value: datetime):
+        return str(value)
+
+    @field_validator("remainder_date")
+    @classmethod
+    def validate_reminder_date(cls, value: datetime):
+        v_timezone = value.tzinfo
+        current_relative_time = datetime.now(tz=v_timezone)
+        if value < current_relative_time:
+            raise ValueError("Reminder date cannot be in the past")
+        return value
 
 
 class CartResponseModel(BaseModel):
@@ -21,7 +42,7 @@ class CartResponseModel(BaseModel):
 
 class AddToCartRequestModel(BaseModel):
     product_id: int = Field(..., description="ID of the product")
-    quantity: int = Field(..., description="Quantity of the product")
+    quantity: int = Field(..., le=10, description="Quantity of the product")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,7 +50,7 @@ class AddToCartRequestModel(BaseModel):
 class CartsResponseModel(BaseModel):
     id: int = Field(..., description="ID of the cart")
     name: str = Field(..., description="Name of the cart")
-    reminder_date: Optional[datetime] = Field(
+    remainder_date: Optional[datetime] = Field(
         None, description="Reminder date of the cart"
     )
     status: CartStatus = Field(..., description="Status of the cart")

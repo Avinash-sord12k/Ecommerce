@@ -20,7 +20,7 @@ class CartRepository:
                     .values(
                         user_id=user_id,
                         name=cart.name,
-                        reminder_date=cart.reminder_date,
+                        remainder_date=cart.remainder_date,
                     )
                     .returning(Cart.id)
                 )
@@ -83,7 +83,7 @@ class CartRepository:
                     .where(Cart.id == cart_id)
                     .values(
                         name=cart.name,
-                        reminder_date=cart.reminder_date,
+                        remainder_date=cart.remainder_date,
                     )
                 ).returning(Cart.id)
                 result = await connection.execute(q)

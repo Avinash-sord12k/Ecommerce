@@ -58,6 +58,10 @@ class Seeder(object):
         {"role": "tester", "permission": "delete_subcategory"},
         {"role": "tester", "permission": "read_product"},
         {"role": "tester", "permission": "delete_product"},
+        {"role": "tester", "permission": "create_cart"},
+        {"role": "tester", "permission": "read_cart"},
+        {"role": "tester", "permission": "update_cart"},
+        {"role": "tester", "permission": "delete_cart"},
     ]
 
     @staticmethod
