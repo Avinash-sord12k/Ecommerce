@@ -30,8 +30,11 @@ class CartRepository:
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error creating cart: {e=}")
                 raise e
+            except Exception as e:
+                logger.error(f"Error creating cart: {e=}")
+                raise e
 
-    async def get(self, user_id: int, cart_id: int):
+    async def get(self, user_id: int, cart_id: int) -> dict:
         async with self.db.engine.begin() as connection:
             try:
                 q = (
@@ -40,12 +43,20 @@ class CartRepository:
                     .where(Cart.id == cart_id)
                 )
                 result = await connection.execute(q)
-                if not (cart := result.scalar()):
+                if not (cart := result.fetchone()):
                     raise EntityNotFoundError(entity="Cart")
 
+                q = select(CartItems).where(CartItems.cart_id == cart[0])
+                result = await connection.execute(q)
+
+                cart = cart._asdict()
+                cart["items"] = [item._asdict() for item in result.fetchall()]
                 return cart
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error getting cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error getting cart: {e=}")
                 raise e
 
     async def get_all(self, user_id: int):
@@ -56,6 +67,9 @@ class CartRepository:
                 return result.fetchall()
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error getting cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error getting cart: {e=}")
                 raise e
 
     async def delete(self, user_id: int, cart_id: int):
@@ -70,6 +84,9 @@ class CartRepository:
                 return True
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error deleting cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error deleting cart: {e=}")
                 raise e
 
     async def update(
@@ -90,6 +107,9 @@ class CartRepository:
                 return result.scalar()
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error updating cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error updating cart: {e=}")
                 raise e
 
     async def add_item(
@@ -125,4 +145,7 @@ class CartRepository:
                 return result.scalar()
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error adding items to cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error adding items to cart: {e=}")
                 raise e

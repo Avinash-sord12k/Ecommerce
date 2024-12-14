@@ -1,6 +1,6 @@
 import pytest_asyncio
 from httpx import AsyncClient
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 from loguru import logger
 
 from app.cart.models import CreateCartRequestModel, AddToCartRequestModel
@@ -34,8 +34,8 @@ async def cart(
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
-    logger.debug(response_json)
-    assert response.status_code == HTTP_200_OK
+    assert response.status_code == HTTP_201_CREATED
+    yield response_json
 
     cart_id = response_json["id"]
     response = await client.delete(

@@ -57,6 +57,10 @@ class CartsResponseModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("remainder_date")
+    def serialize_reminder_date(self, value: datetime):
+        return str(value)
+
 
 class AllCartsResponseModel(BaseModel):
     carts: list[CartsResponseModel]

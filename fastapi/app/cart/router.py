@@ -51,14 +51,14 @@ async def create_cart(
     response_model=SingleCartResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["get_cart"])),
+        Depends(allowed_permissions(["read_cart"])),
     ],
 )
 async def get_cart(id: int, user_id: int = (Depends(get_user_id_from_token))):
     try:
         repo = CartRepository()
         cart = await repo.get(user_id, cart_id=id)
-        return JSONResponse(content=cart, status_code=HTTP_200_OK)
+        return SingleCartResponseModel(**cart)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -71,14 +71,14 @@ async def get_cart(id: int, user_id: int = (Depends(get_user_id_from_token))):
     response_model=AllCartsResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["get_all_carts"])),
+        Depends(allowed_permissions(["read_cart"])),
     ],
 )
 async def get_all_carts(user_id: int = (Depends(get_user_id_from_token))):
     try:
         repo = CartRepository()
         carts = await repo.get_all(user_id)
-        return JSONResponse(content=carts, status_code=HTTP_201_CREATED)
+        return JSONResponse(content=carts, status_code=HTTP_200_OK)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -137,7 +137,7 @@ async def update_cart(
     response_model=CartResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["add_item_to_cart"])),
+        Depends(allowed_permissions(["update_cart"])),
     ],
 )
 async def add_item_to_cart(
