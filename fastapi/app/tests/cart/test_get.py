@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
-    HTTP_404_NOT_FOUND,
+    HTTP_405_METHOD_NOT_ALLOWED,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
@@ -14,7 +14,7 @@ async def test_get_a_cart(
 ):
     cart_id = cart["id"]
     response = await client.get(
-        f"/api/v1/cart/{cart_id}",
+        f"/api/v1/cart/get-by-id/{cart_id}",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     logger.info(response.json())
@@ -26,11 +26,11 @@ async def test_get_a_cart_without_id(
     client: AsyncClient, tester_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart",
+        "/api/v1/cart/get-by-id",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     logger.info(response.json())
-    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -39,7 +39,7 @@ async def test_get_a_cart_with_invalid_id(
 ):
     invalid_cart_id = "invalid_id"
     response = await client.get(
-        f"/api/v1/cart/{invalid_cart_id}",
+        f"/api/v1/cart/get-by-id/{invalid_cart_id}",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     logger.info(response.json())

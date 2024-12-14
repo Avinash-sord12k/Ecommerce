@@ -36,7 +36,6 @@ async def lifespan(app):
     await UserSeeder().run()
 
     os.makedirs(SHARED_FOLDER, exist_ok=True)
-    os.makedirs(f"{SHARED_FOLDER}/db", exist_ok=True)
     yield
 
     logger.info("Stopping application")

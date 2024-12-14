@@ -47,7 +47,7 @@ async def create_cart(
 
 
 @router.get(
-    "/{id}",
+    "/get-by-id/{id}",
     response_model=SingleCartResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
@@ -67,7 +67,7 @@ async def get_cart(id: int, user_id: int = (Depends(get_user_id_from_token))):
 
 
 @router.get(
-    "/all",
+    "/get-all",
     response_model=AllCartsResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
@@ -78,7 +78,7 @@ async def get_all_carts(user_id: int = (Depends(get_user_id_from_token))):
     try:
         repo = CartRepository()
         carts = await repo.get_all(user_id)
-        return JSONResponse(content=carts, status_code=HTTP_200_OK)
+        return AllCartsResponseModel(carts=carts)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
