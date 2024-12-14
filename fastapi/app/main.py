@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from app.categories.router import router as category_router
 from app.config import APP_CONFIGS, SHARED_FOLDER
+from app.cart.router import router as cart_router
 from app.database import DatabaseManager
 from app.permissions.router import router as permissions_router
 from app.permissions.seeder import Seeder as PermissionSeeder
@@ -99,3 +100,4 @@ app.include_router(router=permissions_router)
 app.include_router(router=category_router)
 app.include_router(router=subcategory_router)
 app.include_router(router=products_router)
+app.include_router(router=cart_router)

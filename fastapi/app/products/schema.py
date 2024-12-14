@@ -32,3 +32,6 @@ class Product(Base):
         secondary=product_subcategory_association,
         back_populates="products",
     )
+
+    # One-to-many relationship with CartItems
+    cart_items = relationship("CartItems", back_populates="product")
