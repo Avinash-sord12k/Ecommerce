@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
