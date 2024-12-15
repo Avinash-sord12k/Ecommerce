@@ -76,12 +76,22 @@ class CartRepository:
         async with self.db.engine.begin() as connection:
             try:
                 q = (
+                    select(Cart)
+                    .where(Cart.id == cart_id)
+                    .where(Cart.user_id == user_id)
+                )
+                result = await connection.execute(q)
+                if not result.scalar():
+                    logger.warning(f"Unauthorized access report: {user_id=}")
+                    raise EntityNotFoundError(entity="Cart")
+
+                q = (
                     delete(Cart)
                     .where(Cart.user_id == user_id)
                     .where(Cart.id == cart_id)
                 )
                 await connection.execute(q)
-                return True
+                return cart_id
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error deleting cart: {e=}")
                 raise e
@@ -94,6 +104,16 @@ class CartRepository:
     ) -> int:
         async with self.db.engine.begin() as connection:
             try:
+                q = (
+                    select(Cart)
+                    .where(Cart.id == cart_id)
+                    .where(Cart.user_id == user_id)
+                )
+                result = await connection.execute(q)
+                if not result.scalar():
+                    logger.warning(f"Unauthorized access report: {user_id=}")
+                    raise EntityNotFoundError(entity="Cart")
+
                 q = (
                     update(Cart)
                     .where(Cart.user_id == user_id)

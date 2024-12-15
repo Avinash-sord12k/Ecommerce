@@ -4,6 +4,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -14,7 +15,7 @@ from app.cart.models import (
     AddToCartRequestModel,
     SingleCartResponseModel,
 )
-from app.exceptions import EntityIntegrityError
+from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.utils import allowed_permissions
 from app.cart.repository import CartRepository
 from app.users.utils import get_user_id_from_token
@@ -98,8 +99,10 @@ async def delete_cart(
 ):
     try:
         repo = CartRepository()
-        await repo.delete(user_id, cart_id=id)
-        return CartResponseModel(id=id)
+        cart_id = await repo.delete(user_id, cart_id=id)
+        return CartResponseModel(id=cart_id)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
@@ -108,7 +111,7 @@ async def delete_cart(
 
 
 @router.put(
-    "/{id}",
+    "/update/{id}",
     response_model=CartResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
@@ -124,6 +127,8 @@ async def update_cart(
         repo = CartRepository()
         updated_cart_id = await repo.update(user_id, cart_id=id, cart=cart)
         return CartResponseModel(id=updated_cart_id)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:

@@ -3,46 +3,49 @@ from httpx import AsyncClient
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_403_FORBIDDEN,
+    HTTP_405_METHOD_NOT_ALLOWED,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_delete_cart(
+async def test_update_cart(
     client: AsyncClient,
+    cart: dict,
     create_cart_request_payload: dict,
     tester_access_token: str,
 ):
-    response = await client.post(
-        "/api/v1/cart/create",
-        json=create_cart_request_payload,
-        headers={"Authorization": f"Bearer {tester_access_token}"},
-    )
-    response_json = response.json()
-    logger.debug(response_json)
-    assert response.status_code == HTTP_201_CREATED
+    cart_id = cart["id"]
+    request_payload = create_cart_request_payload.copy()
+    request_payload["name"] = "new name"
 
-    cart_id = response_json["id"]
-    response = await client.delete(
-        f"/api/v1/cart/{cart_id}",
+    response = await client.put(
+        f"/api/v1/cart/update/{cart_id}",
+        json=request_payload,
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
     assert response.status_code == HTTP_200_OK
+    assert response_json["id"] == cart["id"]
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_delete_someone_elses_cart(
+async def test_update_someone_else_cart(
     client: AsyncClient,
     cart: dict,
+    create_cart_request_payload: dict,
     customer_access_token: str,
 ):
-    response = await client.delete(
-        f"/api/v1/cart/{cart['id']}",
+    cart_id = cart["id"]
+    request_payload = create_cart_request_payload.copy()
+    request_payload["name"] = "new name"
+    logger.debug(request_payload)
+
+    response = await client.put(
+        f"/api/v1/cart/update/{cart_id}",
+        json=request_payload,
         headers={"Authorization": f"Bearer {customer_access_token}"},
     )
     response_json = response.json()
@@ -51,24 +54,30 @@ async def test_delete_someone_elses_cart(
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_delete_cart_without_id(
-    client: AsyncClient, tester_access_token: str
+async def test_update_cart_without_id(
+    client: AsyncClient,
+    create_cart_request_payload: dict,
+    tester_access_token: str,
 ):
-    response = await client.delete(
-        "/api/v1/cart",
+    response = await client.put(
+        "/api/v1/cart/update",
+        json=create_cart_request_payload,
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
-    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_delete_cart_with_invalid_id(
-    client: AsyncClient, tester_access_token: str
+async def test_update_cart_with_invalid_id(
+    client: AsyncClient,
+    create_cart_request_payload: dict,
+    tester_access_token: str,
 ):
-    response = await client.delete(
-        "/api/v1/cart/invalid_id",
+    response = await client.put(
+        "/api/v1/cart/update/invalid-id",
+        json=create_cart_request_payload,
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
