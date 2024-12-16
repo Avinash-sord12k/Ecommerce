@@ -38,7 +38,7 @@ This is a robust e-commerce application built with FastAPI, PostgreSQL, and Dock
 - Testing: Pytest
 
 ## Test Workflow Status
-![Test Workflow](https://github.com/Ashish-Github193/Ecommerce/actions/workflows/tests.yml/badge.svg)
+![Test Workflow](https://github.com/Ashish-Github193/Ecommerce/actions/workflows/github-actions.yml/badge.svg)
 
 ## Local Development Setup
 
