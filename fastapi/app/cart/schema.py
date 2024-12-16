@@ -18,7 +18,7 @@ class Cart(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String(50), nullable=False)
-    remainder_date = Column(DateTime(timezone=True), nullable=True)
+    reminder_date = Column(DateTime(timezone=True), nullable=True)
     status = Column(
         Enum(CartStatus), default=CartStatus.ACTIVE, nullable=False
     )

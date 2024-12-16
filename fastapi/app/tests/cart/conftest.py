@@ -40,7 +40,7 @@ def product_data():
 def create_cart_request_payload() -> dict:
     return CreateCartRequestModel(
         name=str(uuid4()),
-        remainder_date="2099-01-01T00:00:00.000Z",
+        reminder_date="2099-01-01T00:00:00.000Z",
     ).model_dump()
 
 

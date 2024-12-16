@@ -16,17 +16,17 @@ class CreateCartRequestModel(BaseModel):
     name: str = Field(
         ..., min_length=3, max_length=50, description="Name of the cart"
     )
-    remainder_date: Optional[datetime] = Field(
+    reminder_date: Optional[datetime] = Field(
         None, description="Reminder date of the cart"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-    @field_serializer("remainder_date")
+    @field_serializer("reminder_date")
     def serialize_reminder_date(self, value: datetime):
         return str(value)
 
-    @field_validator("remainder_date")
+    @field_validator("reminder_date")
     @classmethod
     def validate_reminder_date(cls, value: datetime):
         v_timezone = value.tzinfo
@@ -51,14 +51,14 @@ class AddToCartRequestModel(BaseModel):
 class CartsResponseModel(BaseModel):
     id: int = Field(..., description="ID of the cart")
     name: str = Field(..., description="Name of the cart")
-    remainder_date: Optional[datetime] = Field(
+    reminder_date: Optional[datetime] = Field(
         None, description="Reminder date of the cart"
     )
     status: CartStatus = Field(..., description="Status of the cart")
 
     model_config = ConfigDict(from_attributes=True)
 
-    @field_serializer("remainder_date")
+    @field_serializer("reminder_date")
     def serialize_reminder_date(self, value: datetime):
         return str(value)
 

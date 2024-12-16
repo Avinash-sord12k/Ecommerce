@@ -1,10 +1,10 @@
-from itertools import product
+import datetime
 from loguru import logger
 from sqlalchemy import insert, select, delete, update, exc
 
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
-from app.cart.schema import Cart, CartItems
+from app.cart.schema import Cart, CartItems, CartStatus
 from app.cart.models import CreateCartRequestModel, AddToCartRequestModel
 from app.products.schema import Product
 
@@ -21,7 +21,7 @@ class CartRepository:
                     .values(
                         user_id=user_id,
                         name=cart.name,
-                        remainder_date=cart.remainder_date,
+                        reminder_date=cart.reminder_date,
                     )
                     .returning(Cart.id)
                 )
@@ -35,6 +35,33 @@ class CartRepository:
                 logger.error(f"Error creating cart: {e=}")
                 raise e
 
+    async def update_cart_status(self, cart: dict) -> dict:
+        def reminder_date_is_passed(
+            reminder_date: datetime.datetime, by: int = 0
+        ):
+            reminder_date_timezone = reminder_date.tzinfo
+            reminder_date += datetime.timedelta(days=by)
+            if reminder_date < datetime.datetime.now(
+                tz=reminder_date_timezone
+            ):
+                return True
+
+            return False
+
+        async with self.db.engine.begin() as connection:
+            if reminder_date_is_passed(cart["reminder_date"], by=3):
+                q = (
+                    update(Cart)
+                    .where(Cart.id == cart["id"])
+                    .values(reminder_date=None, status=CartStatus.ABANDONED)
+                ).returning(Cart)
+
+                result = await connection.execute(q)
+                cart = result.fetchone()
+                return cart._asdict()
+
+            return cart
+
     async def get(self, user_id: int, cart_id: int) -> dict:
         async with self.db.engine.begin() as connection:
             try:
@@ -47,10 +74,11 @@ class CartRepository:
                 if not (cart := result.fetchone()):
                     raise EntityNotFoundError(entity="Cart")
 
-                q = select(CartItems).where(CartItems.cart_id == cart[0])
+                cart = await self.update_cart_status(cart._asdict())
+
+                q = select(CartItems).where(CartItems.cart_id == cart["id"])
                 result = await connection.execute(q)
 
-                cart = cart._asdict()
                 cart["items"] = [item._asdict() for item in result.fetchall()]
                 return cart
             except exc.SQLAlchemyError as e:
@@ -65,7 +93,11 @@ class CartRepository:
             try:
                 q = select(Cart).where(Cart.user_id == user_id)
                 result = await connection.execute(q)
-                return result.fetchall()
+                all_carts = [
+                    await self.update_cart_status(cart._asdict())
+                    for cart in result.fetchall()
+                ]
+                return all_carts
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error getting cart: {e=}")
                 raise e
@@ -121,7 +153,7 @@ class CartRepository:
                     .where(Cart.id == cart_id)
                     .values(
                         name=cart.name,
-                        remainder_date=cart.remainder_date,
+                        reminder_date=cart.reminder_date,
                     )
                 ).returning(Cart.id)
                 result = await connection.execute(q)

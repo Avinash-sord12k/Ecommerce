@@ -50,12 +50,12 @@ async def test_create_with_invalid_name(
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_create_with_remainder_date_less_than_now(
+async def test_create_with_reminder_date_less_than_now(
     client: AsyncClient, tester_access_token: str
 ):
     response = await client.post(
         "/api/v1/cart/create",
-        json={"name": "test", "remainder_date": "2023-01-01"},
+        json={"name": "test", "reminder_date": "2023-01-01"},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -64,13 +64,13 @@ async def test_create_with_remainder_date_less_than_now(
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_create_with_invalid_remainder_date(
+async def test_create_with_invalid_reminder_date(
     client: AsyncClient,
     tester_access_token: str,
 ):
     response = await client.post(
         "/api/v1/cart/create",
-        json={"name": "test", "remainder_date": "invalid_date"},
+        json={"name": "test", "reminder_date": "invalid_date"},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
