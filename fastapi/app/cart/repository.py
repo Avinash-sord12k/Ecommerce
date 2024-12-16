@@ -1,3 +1,4 @@
+from itertools import product
 from loguru import logger
 from sqlalchemy import insert, select, delete, update, exc
 
@@ -132,9 +133,44 @@ class CartRepository:
                 logger.error(f"Error updating cart: {e=}")
                 raise e
 
-    async def add_item(
-        self, user_id: int, cart_id: int, item: AddToCartRequestModel
-    ):
+    async def add_item(self, user_id: int, item: AddToCartRequestModel):
+        async with self.db.engine.begin() as connection:
+            try:
+                q = (
+                    select(Cart)
+                    .where(Cart.user_id == user_id)
+                    .where(Cart.id == item.cart_id)
+                )
+                result = await connection.execute(q)
+                if not result.scalar():
+                    logger.warning(f"Unauthorized access report: {user_id=}")
+                    raise EntityNotFoundError(entity="Cart")
+
+                q = select(Product).where(Product.id == item.product_id)
+                result = await connection.execute(q)
+                if not result.scalar():
+                    logger.warning(f"Product not found: {item.product_id=}")
+                    raise EntityNotFoundError(entity="Product")
+
+                q = (
+                    insert(CartItems)
+                    .values(
+                        cart_id=item.cart_id,
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                    )
+                    .returning(CartItems.id)
+                )
+                result = await connection.execute(q)
+                return result.fetchone()[0]
+            except exc.SQLAlchemyError as e:
+                logger.exception(f"Error adding items to cart: {e=}")
+                raise e
+            except Exception as e:
+                logger.error(f"Error adding items to cart: {e=}")
+                raise e
+
+    async def remove_item(self, user_id: int, cart_id: int, product_id: int):
         async with self.db.engine.begin() as connection:
             try:
                 q = (
@@ -147,25 +183,21 @@ class CartRepository:
                     logger.warning(f"Unauthorized access report: {user_id=}")
                     raise EntityNotFoundError(entity="Cart")
 
-                q = select(Product).where(Product.id == item.product_id)
-                result = await connection.execute(q)
-                if not result.scalar():
-                    raise EntityNotFoundError(entity="Product")
-
                 q = (
-                    insert(CartItems)
-                    .values(
-                        cart_id=cart_id,
-                        product_id=item.product_id,
-                        quantity=item.quantity,
-                    )
-                    .returning(CartItems.id)
+                    select(CartItems)
+                    .where(CartItems.cart_id == cart_id)
+                    .where(CartItems.product_id == product_id)
                 )
                 result = await connection.execute(q)
-                return result.scalar()
+                if not result.scalar():
+                    raise EntityNotFoundError(entity="Item")
+
+                q = delete(CartItems).where(CartItems.cart_id == cart_id)
+                await connection.execute(q)
+                return cart_id
             except exc.SQLAlchemyError as e:
-                logger.exception(f"Error adding items to cart: {e=}")
+                logger.exception(f"Error removing items from cart: {e=}")
                 raise e
             except Exception as e:
-                logger.error(f"Error adding items to cart: {e=}")
+                logger.error(f"Error removing items from cart: {e=}")
                 raise e

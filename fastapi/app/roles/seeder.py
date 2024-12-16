@@ -56,6 +56,7 @@ class Seeder(object):
         {"role": "tester", "permission": "create_subcategory"},
         {"role": "tester", "permission": "read_subcategory"},
         {"role": "tester", "permission": "delete_subcategory"},
+        {"role": "tester", "permission": "create_product"},
         {"role": "tester", "permission": "read_product"},
         {"role": "tester", "permission": "delete_product"},
         {"role": "tester", "permission": "create_cart"},

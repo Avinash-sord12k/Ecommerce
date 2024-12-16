@@ -5,19 +5,19 @@ from httpx import AsyncClient
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 def category_data():
     """Fixture to provide category data."""
     return {"name": str(uuid4())}
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 def sub_category_data():
     """Fixture to provide category data."""
     return {"name": str(uuid4()), "category_id": None}
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 def product_data():
     """Fixture to provide product data."""
     return {
@@ -34,7 +34,7 @@ def product_data():
     }
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 async def category(
     client: AsyncClient, category_data: dict, tester_access_token: str
 ):
@@ -61,7 +61,7 @@ async def category(
     assert response_json["id"] == category_id
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 async def sub_category(
     client: AsyncClient,
     category: str,
@@ -92,7 +92,7 @@ async def sub_category(
     assert response_json["id"] == subcategory_id
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="session")
 async def product(
     client: AsyncClient,
     sub_category: tuple,

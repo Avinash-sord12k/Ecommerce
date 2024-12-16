@@ -41,6 +41,7 @@ class CartResponseModel(BaseModel):
 
 
 class AddToCartRequestModel(BaseModel):
+    cart_id: int = Field(..., description="ID of the cart")
     product_id: int = Field(..., description="ID of the product")
     quantity: int = Field(..., le=10, description="Quantity of the product")
 

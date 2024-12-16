@@ -145,16 +145,45 @@ async def update_cart(
     ],
 )
 async def add_item_to_cart(
-    id: int,
     item: AddToCartRequestModel,
     user_id: int = (Depends(get_user_id_from_token)),
 ):
     try:
         repo = CartRepository()
-        updated_cart_id = await repo.add_item(user_id, cart_id=id, item=item)
+        updated_cart_id = await repo.add_item(user_id, item=item)
         return CartResponseModel(id=updated_cart_id)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Error adding item to cart: {e=}")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@router.delete(
+    "/remove-item/{cart_id}/{product_id}",
+    response_model=CartResponseModel,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Depends(allowed_permissions(["update_cart"])),
+    ],
+)
+async def remove_item_from_cart(
+    cart_id: int,
+    product_id: int,
+    user_id: int = (Depends(get_user_id_from_token)),
+):
+    try:
+        repo = CartRepository()
+        updated_cart_id = await repo.remove_item(
+            user_id, cart_id=cart_id, product_id=product_id
+        )
+        return CartResponseModel(id=updated_cart_id)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
+    except EntityIntegrityError as e:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error removing item from cart: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
