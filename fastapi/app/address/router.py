@@ -5,6 +5,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
 )
 
 from app.address.exceptions import MaximumAddressLimitReachedError
@@ -58,7 +59,7 @@ async def get_address(id: int, user_id: int = Depends(get_user_id_from_token)):
         address = await repo.get(user_id=user_id, address_id=id)
         return AddressResponseModel(**address)
     except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.exception(f"While reading address {e}")
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
