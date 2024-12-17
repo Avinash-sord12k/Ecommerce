@@ -32,7 +32,6 @@ class UserRepository:
                         full_name=user.full_name,
                         role_id=role_id,
                         phone=user.phone,
-                        address=user.address,
                     ),
                 )
                 result = await connection.execute(
@@ -58,7 +57,6 @@ class UserRepository:
                 .values(
                     email=user.email,
                     full_name=user.full_name,
-                    address=user.address,
                     phone=user.phone,
                     last_active=user.last_active,
                 )

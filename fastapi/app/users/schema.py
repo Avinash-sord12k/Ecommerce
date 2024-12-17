@@ -18,7 +18,6 @@ class User(Base):
     full_name: str = Column(String(255), nullable=True)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
     phone: str = Column(String(255), nullable=True)
-    address: str = Column(String(255), nullable=True)
     created_at: datetime = Column(
         DateTime(timezone=True), default=datetime.now(timezone.utc)
     )
@@ -35,3 +34,6 @@ class User(Base):
     role = relationship("Role", back_populates="users")
     products = relationship("Product", back_populates="user")
     carts = relationship("Cart", back_populates="user")
+    addresses = relationship(
+        "Address", back_populates="user", cascade="all, delete-orphan"
+    )

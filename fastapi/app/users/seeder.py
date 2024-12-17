@@ -16,7 +16,6 @@ class Seeder(object):
             full_name="Admin",
             phone="8700645195",
             role="admin",
-            address="Basically heaven, Earth, Milkyway",
         ),
         UserCreate(
             username="customer",
@@ -25,7 +24,6 @@ class Seeder(object):
             full_name="Customer",
             phone="8700635185",
             role="customer",
-            address="Basically heaven, Cool planet, Andromeda",
         ),
         UserCreate(
             username="seller",
@@ -34,7 +32,6 @@ class Seeder(object):
             full_name="Seller",
             phone="8700725185",
             role="seller",
-            address="Basically heaven, Cool planet, Cygnus A",
         ),
         UserCreate(
             username="tester",
@@ -43,7 +40,6 @@ class Seeder(object):
             full_name="Tester",
             phone="8700645195",
             role="tester",
-            address="Basically heaven, Earth, Milkyway",
         ),
     ]
 

@@ -1,6 +1,5 @@
 from app.permissions.models import PermissionCreateModel
 
-
 PERMISSIONS = [
     PermissionCreateModel(
         name="create_cart",

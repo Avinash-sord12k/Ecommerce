@@ -17,7 +17,7 @@ from app.products.models import (
     UpdateProductRequestModel,
 )
 from app.products.repository import ProductRepository
-from app.users.utils import oauth2scheme, get_user_id_from_token
+from app.users.utils import get_user_id_from_token, oauth2scheme
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 

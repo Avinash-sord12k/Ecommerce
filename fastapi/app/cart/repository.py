@@ -1,11 +1,12 @@
 import datetime
-from loguru import logger
-from sqlalchemy import insert, select, delete, update, exc
 
+from loguru import logger
+from sqlalchemy import delete, exc, insert, select, update
+
+from app.cart.models import AddToCartRequestModel, CreateCartRequestModel
+from app.cart.schema import Cart, CartItems, CartStatus
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
-from app.cart.schema import Cart, CartItems, CartStatus
-from app.cart.models import CreateCartRequestModel, AddToCartRequestModel
 from app.products.schema import Product
 
 

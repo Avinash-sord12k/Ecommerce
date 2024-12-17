@@ -3,8 +3,8 @@ from httpx import AsyncClient
 from loguru import logger
 from starlette.status import (
     HTTP_200_OK,
-    HTTP_405_METHOD_NOT_ALLOWED,
     HTTP_404_NOT_FOUND,
+    HTTP_405_METHOD_NOT_ALLOWED,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 

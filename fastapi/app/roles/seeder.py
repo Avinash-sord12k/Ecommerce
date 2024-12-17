@@ -14,56 +14,114 @@ class Seeder(object):
         RoleCreateModel(name="seller", description="Seller of products"),
         RoleCreateModel(name="tester", description="Tester of application"),
     ]
-    ROLE_PERMISSION_ASSOCIATION = [
-        {"role": "admin", "permission": "create_role"},
-        {"role": "admin", "permission": "read_role"},
-        {"role": "admin", "permission": "update_role"},
-        {"role": "admin", "permission": "create_permission"},
-        {"role": "admin", "permission": "read_permission"},
-        {"role": "admin", "permission": "create_category"},
-        {"role": "admin", "permission": "read_category"},
-        {"role": "admin", "permission": "delete_category"},
-        {"role": "admin", "permission": "create_subcategory"},
-        {"role": "admin", "permission": "read_subcategory"},
-        {"role": "admin", "permission": "delete_subcategory"},
-        {"role": "admin", "permission": "read_product"},
-        {"role": "admin", "permission": "delete_product"},
-        {"role": "customer", "permission": "read_role"},
-        {"role": "customer", "permission": "read_category"},
-        {"role": "customer", "permission": "read_subcategory"},
-        {"role": "customer", "permission": "read_product"},
-        {"role": "customer", "permission": "create_cart"},
-        {"role": "customer", "permission": "read_cart"},
-        {"role": "customer", "permission": "update_cart"},
-        {"role": "customer", "permission": "delete_cart"},
-        {"role": "seller", "permission": "read_role"},
-        {"role": "seller", "permission": "read_category"},
-        {"role": "seller", "permission": "read_subcategory"},
-        {"role": "seller", "permission": "read_product"},
-        {"role": "seller", "permission": "create_product"},
-        {"role": "seller", "permission": "update_product"},
-        {"role": "seller", "permission": "delete_product"},
-        {"role": "tester", "permission": "create_role"},
-        {"role": "tester", "permission": "read_role"},
-        {"role": "tester", "permission": "update_role"},
-        {"role": "tester", "permission": "delete_role"},
-        {"role": "tester", "permission": "create_permission"},
-        {"role": "tester", "permission": "read_permission"},
-        {"role": "tester", "permission": "delete_permission"},
-        {"role": "tester", "permission": "create_category"},
-        {"role": "tester", "permission": "read_category"},
-        {"role": "tester", "permission": "delete_category"},
-        {"role": "tester", "permission": "create_subcategory"},
-        {"role": "tester", "permission": "read_subcategory"},
-        {"role": "tester", "permission": "delete_subcategory"},
-        {"role": "tester", "permission": "create_product"},
-        {"role": "tester", "permission": "read_product"},
-        {"role": "tester", "permission": "delete_product"},
-        {"role": "tester", "permission": "create_cart"},
-        {"role": "tester", "permission": "read_cart"},
-        {"role": "tester", "permission": "update_cart"},
-        {"role": "tester", "permission": "delete_cart"},
-    ]
+    ROLE_PERMISSION_ASSOCIATION = (
+        [
+            {"role": "admin", "permission": "create_role"},
+            {"role": "admin", "permission": "read_role"},
+            {"role": "admin", "permission": "update_role"},
+        ]
+        + [
+            {"role": "admin", "permission": "create_permission"},
+            {"role": "admin", "permission": "read_permission"},
+        ]
+        + [
+            {"role": "admin", "permission": "create_category"},
+            {"role": "admin", "permission": "read_category"},
+            {"role": "admin", "permission": "delete_category"},
+        ]
+        + [
+            {"role": "admin", "permission": "create_subcategory"},
+            {"role": "admin", "permission": "read_subcategory"},
+            {"role": "admin", "permission": "delete_subcategory"},
+        ]
+        + [
+            {"role": "admin", "permission": "read_product"},
+            {"role": "admin", "permission": "delete_product"},
+        ]
+        + [
+            {"role": "customer", "permission": "read_role"},
+        ]
+        + [
+            {"role": "customer", "permission": "read_category"},
+        ]
+        + [
+            {"role": "customer", "permission": "read_subcategory"},
+        ]
+        + [
+            {"role": "customer", "permission": "read_product"},
+        ]
+        + [
+            {"role": "customer", "permission": "create_cart"},
+            {"role": "customer", "permission": "read_cart"},
+            {"role": "customer", "permission": "update_cart"},
+            {"role": "customer", "permission": "delete_cart"},
+        ]
+        + [
+            {"role": "seller", "permission": "read_role"},
+        ]
+        + [
+            {"role": "seller", "permission": "read_category"},
+        ]
+        + [
+            {"role": "seller", "permission": "read_subcategory"},
+        ]
+        + [
+            {"role": "seller", "permission": "read_product"},
+            {"role": "seller", "permission": "create_product"},
+            {"role": "seller", "permission": "update_product"},
+            {"role": "seller", "permission": "delete_product"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_role"},
+            {"role": "tester", "permission": "read_role"},
+            {"role": "tester", "permission": "update_role"},
+            {"role": "tester", "permission": "delete_role"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_permission"},
+            {"role": "tester", "permission": "read_permission"},
+            {"role": "tester", "permission": "delete_permission"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_category"},
+            {"role": "tester", "permission": "read_category"},
+            {"role": "tester", "permission": "delete_category"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_subcategory"},
+            {"role": "tester", "permission": "read_subcategory"},
+            {"role": "tester", "permission": "delete_subcategory"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_product"},
+            {"role": "tester", "permission": "read_product"},
+            {"role": "tester", "permission": "delete_product"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_cart"},
+            {"role": "tester", "permission": "read_cart"},
+            {"role": "tester", "permission": "update_cart"},
+            {"role": "tester", "permission": "delete_cart"},
+        ]
+        + [
+            {"role": "tester", "permission": "create_address"},
+            {"role": "tester", "permission": "read_address"},
+            {"role": "tester", "permission": "update_address"},
+            {"role": "tester", "permission": "delete_address"},
+        ]
+        + [
+            {"role": "customer", "permission": "create_address"},
+            {"role": "customer", "permission": "read_address"},
+            {"role": "customer", "permission": "update_address"},
+            {"role": "customer", "permission": "delete_address"},
+        ]
+        + [
+            {"role": "seller", "permission": "create_address"},
+            {"role": "seller", "permission": "read_address"},
+            {"role": "seller", "permission": "update_address"},
+            {"role": "seller", "permission": "delete_address"},
+        ]
+    )
 
     @staticmethod
     async def run():

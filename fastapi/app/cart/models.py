@@ -1,13 +1,13 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    field_validator,
     field_serializer,
+    field_validator,
 )
-from typing import Optional
 
 from app.cart.schema import CartStatus
 

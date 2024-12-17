@@ -1,5 +1,7 @@
 from loguru import logger
 
+from app.address.permissions import PERMISSIONS as ADDRESS_PERMISSIONS
+from app.cart.permissions import PERMISSIONS as CART_PERMISSIONS
 from app.categories.permissions import PERMISSIONS as CATEGORY_PERMISSIONS
 from app.exceptions import EntityIntegrityError
 from app.permissions.permissions import PERMISSIONS as PERMISSION_PERMISSIONS
@@ -10,7 +12,6 @@ from app.roles.permissions import PERMISSIONS as ROLE_PERMISSIONS
 from app.subcategories.permissions import (
     PERMISSIONS as SUBCATEGORY_PERMISSIONS,
 )
-from app.cart.permissions import PERMISSIONS as CART_PERMISSIONS
 
 
 class Seeder:
@@ -22,6 +23,7 @@ class Seeder:
         *SUBCATEGORY_PERMISSIONS,
         *PRODUCT_PERMISSIONS,
         *CART_PERMISSIONS,
+        *ADDRESS_PERMISSIONS,
     ]
 
     async def run(self):

@@ -1,10 +1,11 @@
-import pytest_asyncio
 from uuid import uuid4
-from httpx import AsyncClient
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED
-from loguru import logger
 
-from app.cart.models import CreateCartRequestModel, AddToCartRequestModel
+import pytest_asyncio
+from httpx import AsyncClient
+from loguru import logger
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED
+
+from app.cart.models import AddToCartRequestModel, CreateCartRequestModel
 
 
 @pytest_asyncio.fixture(scope="session")

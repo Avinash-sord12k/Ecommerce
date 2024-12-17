@@ -19,7 +19,6 @@ class UserCreate(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
     role: UserRoles = UserRoles.CUSTOMER
-    address: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -38,7 +37,6 @@ class UserRead(BaseModel):
     email: Optional[str] = None
     full_name: Optional[str] = None
     phone: Optional[str] = None
-    address: Optional[str] = None
     role_id: int
     is_internal_user: bool
     date_joined: datetime
