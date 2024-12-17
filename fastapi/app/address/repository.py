@@ -1,12 +1,12 @@
-from sqlalchemy import insert, exc, select, delete, update, func
 from loguru import logger
+from sqlalchemy import delete, exc, func, insert, select, update
 
-from app.config import MAXIMUM_ADDRESS_CREATION_LIMIT_PER_USER
-from app.exceptions import EntityNotFoundError
+from app.address.exceptions import MaximumAddressLimitReachedError
 from app.address.models import AddressCreateModel
 from app.address.schema import Address
+from app.config import MAXIMUM_ADDRESS_CREATION_LIMIT_PER_USER
 from app.database import DatabaseManager
-from app.address.exceptions import MaximumAddressLimitReachedError
+from app.exceptions import EntityNotFoundError
 
 
 class AddressRepository:

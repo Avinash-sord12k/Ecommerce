@@ -37,17 +37,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r fastapi/requirements.txt
           
-      - name: Install pre-commit
+      - name: Install pre-commit and isort
         run: |
-          pip install pre-commit
+          pip install pre-commit isort
+
+      - name: Run isort (apply changes)
+        run: |
+          isort .
+
+      - name: Run black (apply changes)
+        run: |
+          black .
 
       - name: Run pre-commit hooks
         run: |
           pre-commit run --all-files
-
-      - name: Check if files were modified
-        run: |
-          git diff --exit-code || echo "Files were modified, committing changes."
 
       - name: Commit changes if any
         if: ${{ success() }}
@@ -57,7 +61,7 @@ jobs:
           git add .
           git commit -m "Apply code formatting via pre-commit hooks"
           git push
-          
+
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres

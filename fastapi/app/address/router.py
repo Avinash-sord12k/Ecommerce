@@ -1,4 +1,5 @@
 from venv import logger
+
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import (
     HTTP_200_OK,
@@ -7,16 +8,15 @@ from starlette.status import (
 )
 
 from app.address.exceptions import MaximumAddressLimitReachedError
-from app.address.repository import AddressRepository
 from app.address.models import (
-    AddressResponseModel,
     AddressCreateModel,
+    AddressResponseModel,
     AllAddressResponseModel,
 )
+from app.address.repository import AddressRepository
 from app.exceptions import EntityNotFoundError
 from app.permissions.utils import allowed_permissions
 from app.users.utils import get_user_id_from_token
-
 
 router = APIRouter(prefix="/api/v1/address", tags=["Address"])
 
