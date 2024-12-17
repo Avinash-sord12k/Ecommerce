@@ -13,7 +13,7 @@ class Address(Base):
     address: str = Column(String(255), nullable=False)
     city: str = Column(String(255), nullable=False)
     state: str = Column(String(255), nullable=False)
-    zip_code: str = Column(String(255), nullable=False)
+    pincode: str = Column(String(255), nullable=False)
     country: str = Column(String(255), nullable=False)
 
     user = relationship("User", back_populates="addresses")

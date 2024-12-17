@@ -34,7 +34,7 @@ async def create_address(
 ):
     try:
         repo = AddressRepository()
-        address_id = await repo.create(1, address)
+        address_id = await repo.create(user_id=user_id, address=address)
         address = await repo.get(user_id=user_id, address_id=address_id)
         return AddressResponseModel(**address)
     except MaximumAddressLimitReachedError as e:
@@ -128,8 +128,7 @@ async def delete_address(
 ):
     try:
         repo = AddressRepository()
-        address_id = await repo.delete(user_id=user_id, address_id=id)
-        address = await repo.get(user_id=user_id, address_id=address_id)
+        address = await repo.delete(user_id=user_id, address_id=id)
         return AddressResponseModel(**address)
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))

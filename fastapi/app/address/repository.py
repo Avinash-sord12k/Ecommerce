@@ -43,7 +43,7 @@ class AddressRepository:
                         address=address.address,
                         city=address.city,
                         state=address.state,
-                        zip_code=address.pincode,
+                        pincode=address.pincode,
                         country=address.country,
                         user_id=user_id,
                     )
@@ -64,8 +64,8 @@ class AddressRepository:
             try:
                 q = (
                     select(Address)
-                    .where(Address.id == address_id)
                     .where(Address.user_id == user_id)
+                    .where(Address.id == address_id)
                 )
                 result = await connection.execute(q)
                 if not (address := result.fetchone()):
@@ -118,7 +118,7 @@ class AddressRepository:
                         address=address.address,
                         city=address.city,
                         state=address.state,
-                        zip_code=address.pincode,
+                        pincode=address.pincode,
                         country=address.country,
                     )
                 )
@@ -140,7 +140,8 @@ class AddressRepository:
                     .where(Address.user_id == user_id)
                 )
                 result = await connection.execute(q)
-                if not result.scalar():
+                address = result.fetchone()
+                if not address:
                     logger.warning(f"Unauthorized access report: {user_id=}")
                     raise EntityNotFoundError(entity="Address")
 
@@ -150,7 +151,7 @@ class AddressRepository:
                     .where(Address.id == address_id)
                 )
                 await connection.execute(q)
-                return address_id
+                return address._asdict()
             except exc.SQLAlchemyError as e:
                 logger.exception(f"Error deleting address: {e}")
                 raise e

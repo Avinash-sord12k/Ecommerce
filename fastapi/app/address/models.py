@@ -30,6 +30,7 @@ class AddressCreateModel(AddressBaseModel):
 
 class AddressResponseModel(AddressBaseModel):
     id: int = Field(..., description="ID of the address")
+    user_id: int = Field(..., description="ID of the user")
     model_config = ConfigDict(from_attributes=True)
 
 
