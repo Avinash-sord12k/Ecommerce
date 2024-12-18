@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -15,12 +15,11 @@ async def test_get_all(
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_get_all_without_creation(
-    client: AsyncClient, tester_access_token: str
+async def test_get_all_without_permission(
+    client: AsyncClient, admin_access_token: str
 ):
     response = await client.get(
         "/api/v1/address/get-all",
-        headers={"Authorization": f"Bearer {tester_access_token}"},
+        headers={"Authorization": f"Bearer {admin_access_token}"},
     )
-    assert response.status_code == HTTP_200_OK
-    assert len(response.json()["addresses"]) == 0
+    assert response.status_code == HTTP_403_FORBIDDEN

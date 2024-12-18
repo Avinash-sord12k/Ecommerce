@@ -108,7 +108,7 @@ async def update_address(
         address = await repo.get(user_id=user_id, address_id=address_id)
         return AddressResponseModel(**address)
     except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logger.exception(f"While updating address: {e}")
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
