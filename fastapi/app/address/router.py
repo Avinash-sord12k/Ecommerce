@@ -73,9 +73,7 @@ async def get_address(id: int, user_id: int = Depends(get_user_id_from_token)):
         Depends(allowed_permissions(["read_address"])),
     ],
 )
-async def get_all_address(
-    id: int, user_id: int = Depends(get_user_id_from_token)
-):
+async def get_all_address(user_id: int = Depends(get_user_id_from_token)):
     try:
         repo = AddressRepository()
         addresses = await repo.get_all(user_id=user_id)
