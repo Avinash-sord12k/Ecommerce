@@ -25,7 +25,7 @@ exclude = [
 ]
 
 venvPath = "."
-venv = "venv"
+venv = ".venv"
 
 typeCheckingMode = "off"
 

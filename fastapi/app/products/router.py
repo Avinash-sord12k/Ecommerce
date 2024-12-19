@@ -1,3 +1,5 @@
+from math import ceil
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -10,6 +12,7 @@ from starlette.status import (
 )
 
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.models import PaginatedResponse, PaginationParams
 from app.permissions.utils import allowed_permissions
 from app.products.models import (
     CreateProductRequestModel,
@@ -57,14 +60,14 @@ async def create_product(
 
 @router.get(
     "/get-by-id/{id}",
-    response_model=ProductResponseModel,
+    response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(oauth2scheme),
         Depends(allowed_permissions(["read_product"])),
     ],
 )
-async def get_product_by_id(id: int):
+async def get_product_by_id(id: int, pagination: PaginationParams = Depends()):
     try:
         repo = ProductRepository()
         product = await repo.get_by_id(id)
@@ -77,19 +80,32 @@ async def get_product_by_id(id: int):
 
 
 @router.get(
-    "/get-by-category-id/{category_id}",
-    response_model=ProductResponseModel,
+    "/get-by-category-id",
+    response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(oauth2scheme),
         Depends(allowed_permissions(["read_product"])),
     ],
 )
-async def get_product_by_category_id(category_id: int):
+async def get_product_by_category_id(
+    category_id: int, pagination: PaginationParams = Depends()
+):
     try:
         repo = ProductRepository()
-        products = await repo.get_by_category_id(category_id)
-        return JSONResponse(content=products, status_code=HTTP_200_OK)
+        products, total = await repo.get_by_category_id(
+            category_id, pagination.page, pagination.page_size
+        )
+
+        total_pages = ceil(total / pagination.page_size)
+
+        return PaginatedResponse(
+            items=products,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            total_pages=total_pages,
+        )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
@@ -98,19 +114,32 @@ async def get_product_by_category_id(category_id: int):
 
 
 @router.get(
-    "/get-by-subcategory-id/{sub_category_id}",
-    response_model=ProductResponseModel,
+    "/get-by-subcategory-id",
+    response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(oauth2scheme),
         Depends(allowed_permissions(["read_product"])),
     ],
 )
-async def get_product_by_sub_category_id(sub_category_id: int):
+async def get_product_by_sub_category_id(
+    sub_category_id: int, pagination: PaginationParams = Depends()
+):
     try:
         repo = ProductRepository()
-        products = await repo.get_by_subcategory_id(sub_category_id)
-        return JSONResponse(content=products, status_code=HTTP_200_OK)
+        products, total = await repo.get_by_subcategory_id(
+            sub_category_id, pagination.page, pagination.page_size
+        )
+
+        total_pages = ceil(total / pagination.page_size)
+
+        return PaginatedResponse(
+            items=products,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            total_pages=total_pages,
+        )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:

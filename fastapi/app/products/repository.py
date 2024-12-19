@@ -9,13 +9,17 @@ from app.products.models import (
     UpdateProductRequestModel,
 )
 from app.products.schema import Product
+from app.repository import BaseRepository
 from app.subcategories.repository import ProductSubCategoryRepository
-from app.subcategories.schema import product_subcategory_association
+from app.subcategories.schema import (
+    SubCategory,
+    product_subcategory_association,
+)
 
 
-class ProductRepository:
+class ProductRepository(BaseRepository):
     def __init__(self):
-        self.db = DatabaseManager._instance
+        super().__init__(DatabaseManager._instance)
 
     async def create(
         self, user_id: int, product: CreateProductRequestModel
@@ -115,79 +119,69 @@ class ProductRepository:
             return product._asdict()
 
     async def get_by_category_id(
-        self, category_id: int, max_objects: int = 10
-    ) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            q = (
-                select(Product)
-                .where(Product.category_id == category_id)
-                .limit(max_objects)
-            )
-            result = await connection.execute(q)
-            products = result.fetchall()
-            if not products:
-                raise EntityNotFoundError(entity="Product")
+        self, category_id: int, page: int = 1, page_size: int = 10
+    ) -> tuple[list[dict], int]:
+        query = select(Product).where(Product.category_id == category_id)
+        items, total = await self.get_paginated(query, page, page_size)
 
-            return [product._asdict() for product in products]
+        if not items:
+            raise EntityNotFoundError(entity="Product")
+        return items, total
 
     async def get_by_category_name(
-        self, category_name: str, max_objects: int = 10
-    ) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            q = (
-                select(Product)
-                .where(Product.category.has(name=category_name))
-                .limit(max_objects)
-            )
-            result = await connection.execute(q)
-            products = result.fetchall()
-            if not products:
-                raise EntityNotFoundError(entity="Product")
+        self, category_name: str, page: int = 1, page_size: int = 10
+    ) -> tuple[list[dict], int]:
+        query = select(Product).where(Product.category.has(name=category_name))
+        items, total = await self.get_paginated(query, page, page_size)
 
-            return [product._asdict() for product in products]
+        if not items:
+            raise EntityNotFoundError(entity="Product")
+        return items, total
 
     async def get_by_subcategory_id(
-        self, sub_category_id: int, max_objects: int = 10
-    ) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            q = (
-                select(product_subcategory_association)
-                .where(
-                    product_subcategory_association.c.sub_category_id
-                    == sub_category_id
-                )
-                .limit(max_objects)
-            )
-            result = await connection.execute(q)
-            associations = result.fetchall()
-            if not associations:
-                logger.debug("No associations found")
-                raise EntityNotFoundError(entity="Product")
+        self, sub_category_id: int, page: int = 1, page_size: int = 10
+    ) -> tuple[list[dict], int]:
+        association_query = select(
+            product_subcategory_association.c.product_id
+        ).where(
+            product_subcategory_association.c.sub_category_id
+            == sub_category_id
+        )
 
-            q = select(Product).where(
-                Product.id.in_(
-                    [association.product_id for association in associations]
-                )
-            )
-            result = await connection.execute(q)
-            products = result.fetchall()
-            return [product._asdict() for product in products]
+        query = select(Product).where(
+            Product.id.in_(association_query.scalar_subquery())
+        )
+
+        items, total = await self.get_paginated(query, page, page_size)
+
+        if not items:
+            logger.debug("No associations found")
+            raise EntityNotFoundError(entity="Product")
+
+        return items, total
 
     async def get_by_sub_category_name(
-        self, sub_category_name: str, max_objects: int = 10
-    ) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            q = (
-                select(Product)
-                .where(Product.sub_category.has(name=sub_category_name))
-                .limit(max_objects)
+        self, sub_category_name: str, page: int = 1, page_size: int = 10
+    ) -> tuple[list[dict], int]:
+        association_query = (
+            select(product_subcategory_association.c.product_id)
+            .join(
+                SubCategory,
+                product_subcategory_association.c.sub_category_id
+                == SubCategory.id,
             )
-            result = await connection.execute(q)
-            products = result.fetchall()
-            if not products:
-                raise EntityNotFoundError(entity="Product")
+            .where(SubCategory.name == sub_category_name)
+        )
 
-            return [product._asdict() for product in products]
+        query = select(Product).where(
+            Product.id.in_(association_query.scalar_subquery())
+        )
+
+        items, total = await self.get_paginated(query, page, page_size)
+
+        if not items:
+            raise EntityNotFoundError(entity="Product")
+        return items, total
 
     async def delete(self, id: int):
         async with self.db.engine.begin() as connection:
