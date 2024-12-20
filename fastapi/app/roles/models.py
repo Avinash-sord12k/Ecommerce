@@ -21,25 +21,16 @@ class RoleResponseModel(BaseModel):
     description: str = Field(
         None, max_length=255, description="Description of the role"
     )
-    permission_ids: Optional[list[int]] = Field(
-        None, description="List of permission IDs"
+    permissions: Optional[list[str]] = Field(
+        None, description="List of permission names"
     )
     model_config = ConfigDict(from_attributes=True)
 
 
 class RoleUpdateModel(BaseModel):
-    name: Optional[str] = Field(
-        str,
-        min_length=3,
-        max_length=50,
-        description="Name of the role",
-    )
-    description: Optional[str] = Field(
-        None, max_length=255, description="Description of the role"
-    )
-    permission_ids: Optional[list[int]] = Field(
-        None, description="List of permission IDs"
-    )
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: Optional[list[str]] = None
     model_config = ConfigDict(from_attributes=True)
 
 
