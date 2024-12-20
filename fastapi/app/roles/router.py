@@ -36,6 +36,7 @@ router = APIRouter(prefix="/api/v1/role", tags=["Role"])
         Depends(oauth2scheme),
         Depends(allowed_permissions(["create_role"])),
     ],
+    description="Create a new role with no initial permissions",
 )
 async def create_role(role: RoleCreateModel):
     try:
@@ -57,6 +58,7 @@ async def create_role(role: RoleCreateModel):
         Depends(oauth2scheme),
         Depends(allowed_permissions(["read_role"])),
     ],
+    description="Get all roles with their basic information",
 )
 async def get_all_roles():
     try:
@@ -76,6 +78,7 @@ async def get_all_roles():
         Depends(oauth2scheme),
         Depends(allowed_permissions(["read_role"])),
     ],
+    description="Get a role by ID including its permissions",
 )
 async def get_role_by_id(id: int):
     try:
@@ -97,6 +100,7 @@ async def get_role_by_id(id: int):
         Depends(oauth2scheme),
         Depends(allowed_permissions(["update_role"])),
     ],
+    description="Update a role's information and permissions",
 )
 async def update_role(id: int, role: RoleUpdateModel):
     try:
@@ -117,6 +121,7 @@ async def update_role(id: int, role: RoleUpdateModel):
         Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_role"])),
     ],
+    description="Delete a role and its permission associations",
 )
 async def delete_role(id: int):
     try:
