@@ -37,6 +37,8 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_DATABASE: ${POSTGRES_DB}
       SHARED_FOLDER: ${SHARED_FOLDER}
+    ports:
+      - 5000:5000
     volumes:
       - ./data/fastapi/shared:/home/appuser/shared
     depends_on:
