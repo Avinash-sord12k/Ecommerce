@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import (
     ExpiredSignatureError,
@@ -48,7 +49,7 @@ async def create_user(user: UserCreate):
         )
 
 
-@router.post("/login", response_model=UserLoginResponse)
+@router.post("/login")
 async def login_user(request: OAuth2PasswordRequestForm = Depends()):
     try:
         user_repo = UserRepository()
@@ -62,7 +63,12 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
         token = create_access_token(
             data=encode_payload, expires_delta=timedelta(hours=1)
         )
-        return UserLoginResponse(access_token=token)
+
+        # Create response with both body and headers
+        return JSONResponse(
+            content={"access_token": token, "token_type": "bearer"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
     except HTTPException as e:
         logger.exception(f"Error logging in user: {e=}")
         raise e
