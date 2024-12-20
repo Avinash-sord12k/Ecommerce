@@ -11,10 +11,7 @@ from app.products.models import (
 from app.products.schema import Product
 from app.repository import BaseRepository
 from app.subcategories.repository import ProductSubCategoryRepository
-from app.subcategories.schema import (
-    SubCategory,
-    product_subcategory_association,
-)
+from app.subcategories.schema import product_subcategory_association
 
 
 class ProductRepository(BaseRepository):
@@ -69,7 +66,6 @@ class ProductRepository(BaseRepository):
         filter_mappings = {
             "id": lambda v: Product.id == v,
             "name": lambda v: Product.name.ilike(f"%{v}%"),
-            "description": lambda v: Product.description.ilike(f"%{v}%"),
             "slug": lambda v: Product.slug == v,
             "min_price": lambda v: Product.price >= v,
             "max_price": lambda v: Product.price <= v,

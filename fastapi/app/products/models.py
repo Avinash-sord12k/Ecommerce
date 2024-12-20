@@ -78,7 +78,6 @@ class ProductQueryParams(BaseModel):
     # Basic fields
     id: Optional[int] = None
     name: Optional[str] = Field(None, min_length=3, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
     slug: Optional[str] = Field(None, min_length=3, max_length=60)
 
     # Price related
