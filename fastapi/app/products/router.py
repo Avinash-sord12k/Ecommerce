@@ -16,6 +16,7 @@ from app.models import PaginatedResponse, PaginationParams
 from app.permissions.utils import allowed_permissions
 from app.products.models import (
     CreateProductRequestModel,
+    ProductQueryParams,
     ProductResponseModel,
     UpdateProductRequestModel,
 )
@@ -41,13 +42,10 @@ async def create_product(
     try:
         repo = ProductRepository()
         new_product_id = await repo.create(user_id, product)
-        return JSONResponse(
-            content={
-                "id": new_product_id,
-                "user_id": user_id,
-                **product.model_dump(),
-            },
-            status_code=HTTP_201_CREATED,
+        return ProductResponseModel(
+            id=new_product_id,
+            user_id=user_id,
+            **product.model_dump(),
         )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
@@ -59,7 +57,7 @@ async def create_product(
 
 
 @router.get(
-    "/get-by-id/{id}",
+    "",
     response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
@@ -67,34 +65,17 @@ async def create_product(
         Depends(allowed_permissions(["read_product"])),
     ],
 )
-async def get_product_by_id(id: int, pagination: PaginationParams = Depends()):
-    try:
-        repo = ProductRepository()
-        product = await repo.get_by_id(id)
-        return JSONResponse(content=product, status_code=HTTP_200_OK)
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error getting product by id: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
-    "/get-by-category-id",
-    response_model=PaginatedResponse[ProductResponseModel],
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(oauth2scheme),
-        Depends(allowed_permissions(["read_product"])),
-    ],
-)
-async def get_product_by_category_id(
-    category_id: int, pagination: PaginationParams = Depends()
+async def get_products(
+    query_params: ProductQueryParams = Depends(),
+    pagination: PaginationParams = Depends(),
 ):
     try:
         repo = ProductRepository()
-        products, total = await repo.get_by_category_id(
-            category_id, pagination.page, pagination.page_size
+
+        products, total = await repo.get_products(
+            filters=query_params.to_filter_dict(),
+            page=pagination.page,
+            page_size=pagination.page_size,
         )
 
         total_pages = ceil(total / pagination.page_size)
@@ -109,41 +90,7 @@ async def get_product_by_category_id(
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting products by category: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
-    "/get-by-subcategory-id",
-    response_model=PaginatedResponse[ProductResponseModel],
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(oauth2scheme),
-        Depends(allowed_permissions(["read_product"])),
-    ],
-)
-async def get_product_by_sub_category_id(
-    sub_category_id: int, pagination: PaginationParams = Depends()
-):
-    try:
-        repo = ProductRepository()
-        products, total = await repo.get_by_subcategory_id(
-            sub_category_id, pagination.page, pagination.page_size
-        )
-
-        total_pages = ceil(total / pagination.page_size)
-
-        return PaginatedResponse(
-            items=products,
-            total=total,
-            page=pagination.page,
-            page_size=pagination.page_size,
-            total_pages=total_pages,
-        )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error getting products by sub-category id: {e=}")
+        logger.error(f"Error getting products: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 

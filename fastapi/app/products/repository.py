@@ -60,6 +60,59 @@ class ProductRepository(BaseRepository):
             await connection.commit()
             return created_product_id
 
+    async def get_products(
+        self, filters: dict, page: int = 1, page_size: int = 10
+    ) -> tuple[list[dict], int]:
+        # Build base query
+        query = select(Product)
+
+        filter_mappings = {
+            "id": lambda v: Product.id == v,
+            "name": lambda v: Product.name.ilike(f"%{v}%"),
+            "description": lambda v: Product.description.ilike(f"%{v}%"),
+            "slug": lambda v: Product.slug == v,
+            "min_price": lambda v: Product.price >= v,
+            "max_price": lambda v: Product.price <= v,
+            "min_discount": lambda v: Product.discount >= v,
+            "max_discount": lambda v: Product.discount <= v,
+            "min_tax": lambda v: Product.tax >= v,
+            "max_tax": lambda v: Product.tax <= v,
+            "min_stock": lambda v: Product.stock >= v,
+            "max_stock": lambda v: Product.stock <= v,
+            "category_id": lambda v: Product.category_id == v,
+            "tags": lambda v: Product.tags.ilike(f"%{v}%"),
+            "is_active": lambda v: Product.is_active == v,
+        }
+
+        # Apply filters
+        for filter_name, filter_value in filters.items():
+            if filter_name in filter_mappings and filter_value is not None:
+                query = query.where(filter_mappings[filter_name](filter_value))
+
+        # Handle subcategory filter separately due to join logic
+        if filters.get("sub_category_id"):
+            association_query = select(
+                product_subcategory_association.c.product_id
+            ).where(
+                product_subcategory_association.c.sub_category_id
+                == filters["sub_category_id"]
+            )
+            query = query.where(
+                Product.id.in_(association_query.scalar_subquery())
+            )
+
+        # Apply sorting
+        if filters.get("sort_by"):
+            sort_column = getattr(Product, filters["sort_by"])
+            query = query.order_by(
+                sort_column.desc()
+                if filters.get("sort_order") == "desc"
+                else sort_column
+            )
+
+        items, total = await self.get_paginated(query, page, page_size)
+        return items, total
+
     async def update(
         self, product_id: int, product_update: UpdateProductRequestModel
     ) -> dict:
@@ -107,81 +160,6 @@ class ProductRepository(BaseRepository):
             logger.debug(f"Update product: {q}")
             await connection.commit()
             return product_update.model_dump()
-
-    async def get_by_id(self, product_id: int) -> dict:
-        async with self.db.engine.begin() as connection:
-            q = select(Product).where(Product.id == product_id)
-            result = await connection.execute(q)
-            product = result.fetchone()
-            if not product:
-                raise EntityNotFoundError(entity="Product")
-
-            return product._asdict()
-
-    async def get_by_category_id(
-        self, category_id: int, page: int = 1, page_size: int = 10
-    ) -> tuple[list[dict], int]:
-        query = select(Product).where(Product.category_id == category_id)
-        items, total = await self.get_paginated(query, page, page_size)
-
-        if not items:
-            raise EntityNotFoundError(entity="Product")
-        return items, total
-
-    async def get_by_category_name(
-        self, category_name: str, page: int = 1, page_size: int = 10
-    ) -> tuple[list[dict], int]:
-        query = select(Product).where(Product.category.has(name=category_name))
-        items, total = await self.get_paginated(query, page, page_size)
-
-        if not items:
-            raise EntityNotFoundError(entity="Product")
-        return items, total
-
-    async def get_by_subcategory_id(
-        self, sub_category_id: int, page: int = 1, page_size: int = 10
-    ) -> tuple[list[dict], int]:
-        association_query = select(
-            product_subcategory_association.c.product_id
-        ).where(
-            product_subcategory_association.c.sub_category_id
-            == sub_category_id
-        )
-
-        query = select(Product).where(
-            Product.id.in_(association_query.scalar_subquery())
-        )
-
-        items, total = await self.get_paginated(query, page, page_size)
-
-        if not items:
-            logger.debug("No associations found")
-            raise EntityNotFoundError(entity="Product")
-
-        return items, total
-
-    async def get_by_sub_category_name(
-        self, sub_category_name: str, page: int = 1, page_size: int = 10
-    ) -> tuple[list[dict], int]:
-        association_query = (
-            select(product_subcategory_association.c.product_id)
-            .join(
-                SubCategory,
-                product_subcategory_association.c.sub_category_id
-                == SubCategory.id,
-            )
-            .where(SubCategory.name == sub_category_name)
-        )
-
-        query = select(Product).where(
-            Product.id.in_(association_query.scalar_subquery())
-        )
-
-        items, total = await self.get_paginated(query, page, page_size)
-
-        if not items:
-            raise EntityNotFoundError(entity="Product")
-        return items, total
 
     async def delete(self, id: int):
         async with self.db.engine.begin() as connection:

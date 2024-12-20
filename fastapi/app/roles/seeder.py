@@ -95,6 +95,7 @@ class Seeder(object):
         + [
             {"role": "tester", "permission": "create_product"},
             {"role": "tester", "permission": "read_product"},
+            {"role": "tester", "permission": "update_product"},
             {"role": "tester", "permission": "delete_product"},
         ]
         + [
