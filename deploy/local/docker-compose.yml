@@ -45,6 +45,18 @@ services:
     networks:
       - main-network
 
+  # main:
+  #   image: main:latest
+  #   container_name: main
+  #   restart: unless-stopped
+  #   environment:
+  #     NEXT_PUBLIC_BASE_PATH: ""
+  #   depends_on:
+  #     - traefik
+  #     - fastapi
+  #   networks:
+  #     - main-network
+
 networks:
   main-network:
     driver: bridge

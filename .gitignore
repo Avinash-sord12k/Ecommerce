@@ -13,3 +13,7 @@ venv/
 # Misc
 .ropeproject
 lab/
+
+.next
+node_modules
+.env
