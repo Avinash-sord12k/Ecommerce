@@ -17,7 +17,6 @@ from app.categories.models import (
 from app.categories.repository import ProductCategoryRepository
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.utils import allowed_permissions
-from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/category", tags=["Category"])
 
@@ -27,9 +26,13 @@ router = APIRouter(prefix="/api/v1/category", tags=["Category"])
     response_model=CategoryResponseModel,
     status_code=HTTP_201_CREATED,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["create_category"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_category(category: CategoryCreateModel):
     try:
@@ -51,9 +54,13 @@ async def create_category(category: CategoryCreateModel):
     response_model=CategoryResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_category"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_category_by_id(id: int):
     try:
@@ -72,9 +79,13 @@ async def get_category_by_id(id: int):
     response_model=AllCategoriesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_category"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_category():
     try:
@@ -96,9 +107,13 @@ async def get_category():
     response_model=CategoryResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_category"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def delete_category(id: int):
     if not isinstance(id, int):

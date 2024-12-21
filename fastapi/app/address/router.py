@@ -17,7 +17,7 @@ from app.address.models import (
 from app.address.repository import AddressRepository
 from app.exceptions import EntityNotFoundError
 from app.permissions.utils import allowed_permissions
-from app.users.utils import get_user_id_from_token
+from app.users.utils import get_current_user_id
 
 router = APIRouter(prefix="/api/v1/address", tags=["Address"])
 
@@ -29,9 +29,14 @@ router = APIRouter(prefix="/api/v1/address", tags=["Address"])
     dependencies=[
         Depends(allowed_permissions(["create_address"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_address(
-    address: AddressCreateModel, user_id: int = Depends(get_user_id_from_token)
+    address: AddressCreateModel, user_id: int = Depends(get_current_user_id)
 ):
     try:
         repo = AddressRepository()
@@ -52,8 +57,13 @@ async def create_address(
     dependencies=[
         Depends(allowed_permissions(["read_address"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def get_address(id: int, user_id: int = Depends(get_user_id_from_token)):
+async def get_address(id: int, user_id: int = Depends(get_current_user_id)):
     try:
         repo = AddressRepository()
         address = await repo.get(user_id=user_id, address_id=id)
@@ -72,8 +82,13 @@ async def get_address(id: int, user_id: int = Depends(get_user_id_from_token)):
     dependencies=[
         Depends(allowed_permissions(["read_address"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def get_all_address(user_id: int = Depends(get_user_id_from_token)):
+async def get_all_address(user_id: int = Depends(get_current_user_id)):
     try:
         repo = AddressRepository()
         addresses = await repo.get_all(user_id=user_id)
@@ -94,11 +109,16 @@ async def get_all_address(user_id: int = Depends(get_user_id_from_token)):
     dependencies=[
         Depends(allowed_permissions(["update_address"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def update_address(
     id: int,
     address: AddressCreateModel,
-    user_id: int = Depends(get_user_id_from_token),
+    user_id: int = Depends(get_current_user_id),
 ):
     try:
         repo = AddressRepository()
@@ -121,10 +141,13 @@ async def update_address(
     dependencies=[
         Depends(allowed_permissions(["delete_address"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def delete_address(
-    id: int, user_id: int = Depends(get_user_id_from_token)
-):
+async def delete_address(id: int, user_id: int = Depends(get_current_user_id)):
     try:
         repo = AddressRepository()
         address = await repo.delete(user_id=user_id, address_id=id)

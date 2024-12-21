@@ -21,7 +21,7 @@ from app.products.models import (
     UpdateProductRequestModel,
 )
 from app.products.repository import ProductRepository
-from app.users.utils import get_user_id_from_token, oauth2scheme
+from app.users.utils import get_current_user_id
 
 router = APIRouter(prefix="/api/v1/product", tags=["Product"])
 
@@ -31,13 +31,17 @@ router = APIRouter(prefix="/api/v1/product", tags=["Product"])
     response_model=ProductResponseModel,
     status_code=HTTP_201_CREATED,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["create_product"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_product(
     product: CreateProductRequestModel,
-    user_id: int = Depends(get_user_id_from_token),
+    user_id: int = Depends(get_current_user_id),
 ):
     try:
         repo = ProductRepository()
@@ -61,9 +65,13 @@ async def create_product(
     response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_product"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_products(
     query_params: ProductQueryParams = Depends(),
@@ -99,9 +107,13 @@ async def get_products(
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["update_product"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def update_product(id: int, product: UpdateProductRequestModel):
     try:
@@ -120,9 +132,13 @@ async def update_product(id: int, product: UpdateProductRequestModel):
     response_model=ProductResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_product"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def delete_product(id: int):
     try:
