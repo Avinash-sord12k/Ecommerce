@@ -19,6 +19,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
+from app.exceptions import EntityIntegrityError
 from app.users.models import (
     UserCreate,
     UserLoginLogoutResponse,
@@ -31,7 +32,6 @@ from app.users.utils import (
     get_current_user_id,
     token_exists,
 )
-from app.exceptions import EntityIntegrityError
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
