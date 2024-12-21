@@ -2,15 +2,28 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
-from fastapi import HTTPException
-from fastapi.params import Depends
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.config import HASHING_ALGORITHM, SECRET_KEY
+from app.users.auth import (
+    AuthenticationContext,
+    CookieAuthStrategy,
+    OAuth2AuthStrategy,
+)
+from app.users.token import (
+    CookieTokenExtractor,
+    OAuth2TokenExtractor,
+    TokenExtractorStrategy,
+    TokenManager,
+)
 
-oauth2scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
+cookie_strategy = CookieAuthStrategy()
+oauth2_strategy = OAuth2AuthStrategy()
+auth_context = AuthenticationContext([cookie_strategy, oauth2_strategy])
+token_manager = TokenManager([CookieTokenExtractor(), OAuth2TokenExtractor()])
 
 
 def hash_password(password):
@@ -32,24 +45,9 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-def get_user_id_from_token(token: str = Depends(oauth2scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[HASHING_ALGORITHM])
-        if user_id := payload["user_id"]:
-            return user_id
+async def token_exists(request: Request) -> bool:
+    return await auth_context.authenticate(request)
 
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
-    except jwt.ExpiredSignatureError as e:
-        logger.error(f"Token expired: {e=}")
-        return None
-    except jwt.InvalidTokenError as e:
-        logger.error(f"Invalid token: {e=}")
-        return None
-    except jwt.InvalidSignatureError as e:
-        logger.error(f"Invalid signature: {e=}")
-        return None
-    except Exception as e:
-        logger.error(f"Error getting user id from token: {e=}")
-        return None
+
+async def get_current_user_id(request: Request) -> int:
+    return await token_manager.get_user_id(request)
