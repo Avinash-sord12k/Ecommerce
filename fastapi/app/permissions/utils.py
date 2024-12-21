@@ -9,12 +9,12 @@ from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError, NotEnoughPermissionsError
 from app.permissions.schema import Permission, role_permission_association
 from app.users.schema import User
-from app.users.utils import get_user_id_from_token
+from app.users.utils import get_current_user_id
 
 
 def allowed_permissions(required_permissions: list):
     async def permission_checker(
-        user_id: int = Depends(get_user_id_from_token),
+        user_id: int = Depends(get_current_user_id),
     ):
         try:
             db_instance = DatabaseManager._instance

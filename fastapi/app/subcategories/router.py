@@ -22,7 +22,6 @@ from app.subcategories.models import (
     SubCategoryResponseModel,
 )
 from app.subcategories.repository import ProductSubCategoryRepository
-from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
 
@@ -32,9 +31,13 @@ router = APIRouter(prefix="/api/v1/subcategory", tags=["SubCategory"])
     response_model=SubCategoryResponseModel,
     status_code=HTTP_201_CREATED,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["create_subcategory"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_sub_category(sub_category: SubCategoryCreateModel):
     try:
@@ -56,9 +59,13 @@ async def create_sub_category(sub_category: SubCategoryCreateModel):
     response_model=SubCategoryResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_subcategory"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_sub_category_by_id(id: int):
     try:
@@ -77,9 +84,13 @@ async def get_sub_category_by_id(id: int):
     response_model=AllSubCategoriesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_subcategory"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_sub_category():
     try:
@@ -101,9 +112,13 @@ async def get_sub_category():
     response_model=SubCategoryResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_subcategory"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def delete_sub_category(id: int):
     try:

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt.exceptions import (
@@ -17,9 +17,18 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from app.users.models import UserCreate, UserLoginResponse, UserRead, UserRoles
+from app.users.models import (
+    UserCreate,
+    UserLoginLogoutResponse,
+    UserRead,
+    UserRoles,
+)
 from app.users.repository import UserRepository
-from app.users.utils import create_access_token, get_user_id_from_token
+from app.users.utils import (
+    create_access_token,
+    get_current_user_id,
+    token_exists,
+)
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
@@ -49,8 +58,10 @@ async def create_user(user: UserCreate):
         )
 
 
-@router.post("/login")
-async def login_user(request: OAuth2PasswordRequestForm = Depends()):
+@router.post("/login", response_model=UserLoginLogoutResponse)
+async def login_user(
+    request: OAuth2PasswordRequestForm = Depends(), set_cookie: bool = False
+):
     try:
         user_repo = UserRepository()
         if not (user := await user_repo.login(request)):
@@ -64,11 +75,27 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
             data=encode_payload, expires_delta=timedelta(hours=1)
         )
 
-        # Create response with both body and headers
-        return JSONResponse(
-            content={"access_token": token, "token_type": "bearer"},
-            headers={"Authorization": f"Bearer {token}"},
+        # Create response with token in cookie
+        response = JSONResponse(
+            content={"access_token": token, "token_type": "bearer"}
         )
+
+        if not set_cookie:
+            logger.debug(f"Not setting cookie {set_cookie=}")
+            return response
+
+        # Set HTTP-only cookie with the token
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {token}",
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=3600,
+            path="/",
+        )
+
+        return response
     except HTTPException as e:
         logger.exception(f"Error logging in user: {e=}")
         raise e
@@ -80,8 +107,36 @@ async def login_user(request: OAuth2PasswordRequestForm = Depends()):
         )
 
 
-@router.get("/me", response_model=UserRead)
-async def get_user_me(user_id: int = Depends(get_user_id_from_token)):
+@router.get("/logout", response_model=UserLoginLogoutResponse)
+async def logout_user(request: Request):
+    try:
+        response = JSONResponse(content={"message": "Logged out successfully"})
+        response.delete_cookie("access_token")
+        return response
+    except HTTPException as e:
+        logger.exception(f"Error logging out user: {e=}")
+        raise e
+    except Exception as e:
+        logger.error(f"Error logging out user: {e}")
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        )
+
+
+@router.get(
+    "/me",
+    response_model=UserRead,
+    dependencies=[Depends(token_exists)],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
+)
+async def get_user_me(
+    user_id: int = Depends(get_current_user_id),
+):
     try:
         user_repo = UserRepository()
         logger.info(f"Getting user {user_id=}")
