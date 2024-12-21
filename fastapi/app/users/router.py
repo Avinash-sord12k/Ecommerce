@@ -11,9 +11,11 @@ from jwt.exceptions import (
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from starlette.status import (
+    HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
+    HTTP_409_CONFLICT,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -29,11 +31,16 @@ from app.users.utils import (
     get_current_user_id,
     token_exists,
 )
+from app.exceptions import EntityIntegrityError
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
-@router.post("/register", response_model=UserRead)
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=HTTP_201_CREATED,
+)
 async def create_user(user: UserCreate):
     try:
         user_repo = UserRepository()
@@ -44,10 +51,10 @@ async def create_user(user: UserCreate):
             )
         _user = await user_repo.create(user)
         return UserRead.model_validate(_user)
-    except IntegrityError as e:
+    except EntityIntegrityError as e:
         logger.error(f"User already exists: {e}")
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_409_CONFLICT,
             detail="User already exists with this email",
         )
     except Exception as e:
