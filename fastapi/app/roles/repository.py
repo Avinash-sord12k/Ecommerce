@@ -32,7 +32,7 @@ class RoleRepository:
                     id=result.inserted_primary_key[0],
                     name=role.name,
                     description=role.description,
-                    permission_ids=[],
+                    permissions=[],
                 ).model_dump()
             except IntegrityError:
                 logger.warning(f"Role {role.name} already exists")
@@ -58,77 +58,133 @@ class RoleRepository:
 
     async def get_by_id(self, id: int) -> RoleResponseModel:
         async with self.db.engine.begin() as connection:
-            q = select(Role).where(Role.id == id)
+            # Get role and join with permissions
+            q = (
+                select(Role, Permission.name.label("permission_name"))
+                .join(
+                    role_permission_association,
+                    Role.id == role_permission_association.c.role_id,
+                    isouter=True,
+                )
+                .join(
+                    Permission,
+                    Permission.id
+                    == role_permission_association.c.permission_id,
+                    isouter=True,
+                )
+                .where(Role.id == id)
+            )
+
             result = await connection.execute(q)
-            role = result.fetchone()
-            if not role:
+            rows = result.fetchall()
+
+            if not rows:
                 raise EntityNotFoundError(entity="Role")
 
-            # Get associated permissions
-            q = select(role_permission_association).where(
-                role_permission_association.c.role_id == role.id
-            )
-            result = await connection.execute(q)
-            associations = result.fetchall()
+            # First row contains the role information
+            role = rows[0]
+
+            # Collect all permission names
+            permissions = [
+                row.permission_name for row in rows if row.permission_name
+            ]
+
             return RoleResponseModel(
                 id=role.id,
                 name=role.name,
                 description=role.description,
-                permission_ids=[
-                    association.permission_id for association in associations
-                ],
+                permissions=permissions,
             ).model_dump()
 
     async def update(self, id: int, role_update: RoleUpdateModel) -> dict:
         async with self.db.engine.begin() as connection:
-            # Check if the role exists
-            q = select(Role).where(Role.id == id)
-            result = await connection.execute(q)
-            if not result.scalar():
-                raise EntityNotFoundError(entity="Role")
+            try:
+                # Check if the role exists
+                q = select(Role).where(Role.id == id)
+                result = await connection.execute(q)
+                if not result.scalar():
+                    raise EntityNotFoundError(entity="Role")
 
-            # Check if all the permission IDs exist
-            q = select(Permission).where(
-                Permission.id.in_(role_update.permission_ids)
-            )
-            result = await connection.execute(q)
-            permissions = result.fetchall()
-            if len(permissions) != len(role_update.permission_ids):
-                raise EntityNotFoundError(entity="Permission")
+                update_values = {}
+                if role_update.name is not None:
+                    update_values["name"] = role_update.name
+                if role_update.description is not None:
+                    update_values["description"] = role_update.description
 
-            # Delete all the existing associations
-            q = delete(role_permission_association).where(
-                role_permission_association.c.role_id == id
-            )
-            logger.debug(f"Delete existing associations: {q}")
-            await connection.execute(q)
+                if role_update.permissions is not None:
+                    # Get permission IDs from names
+                    q = select(Permission).where(
+                        Permission.name.in_(set(role_update.permissions))
+                    )
+                    result = await connection.execute(q)
+                    permissions = result.fetchall()
 
-            # Associate the new permissions with the role
-            values = [
-                {"role_id": id, "permission_id": permission_id}
-                for permission_id in role_update.permission_ids
-            ]
-            logger.debug(f"Insert new associations: {values}")
-            q = insert(role_permission_association).values(values)
-            await connection.execute(q)
+                    if len(permissions) != len(set(role_update.permissions)):
+                        raise EntityNotFoundError(entity="Permission")
 
-            # update the role
-            q = (
-                update(Role)
-                .where(Role.id == id)
-                .values(
-                    name=role_update.name,
-                    description=role_update.description,
+                    permission_ids = [p.id for p in permissions]
+
+                    # Delete existing associations
+                    q = delete(role_permission_association).where(
+                        role_permission_association.c.role_id == id
+                    )
+                    await connection.execute(q)
+
+                    # Add new associations
+                    if permission_ids:
+                        values = [
+                            {"role_id": id, "permission_id": pid}
+                            for pid in permission_ids
+                        ]
+                        q = insert(role_permission_association).values(values)
+                        await connection.execute(q)
+
+                # Update role if there are values to update
+                if update_values:
+                    q = (
+                        update(Role)
+                        .where(Role.id == id)
+                        .values(**update_values)
+                    )
+                    await connection.execute(q)
+
+                # Get updated role with permissions
+                q = (
+                    select(Role, Permission.name.label("permission_name"))
+                    .outerjoin(
+                        role_permission_association,
+                        Role.id == role_permission_association.c.role_id,
+                    )
+                    .outerjoin(
+                        Permission,
+                        Permission.id
+                        == role_permission_association.c.permission_id,
+                    )
+                    .where(Role.id == id)
                 )
-            )
-            result = await connection.execute(q)
-            await connection.commit()
-            return RoleResponseModel(
-                id=id,
-                name=role_update.name,
-                description=role_update.description,
-                permission_ids=role_update.permission_ids,
-            ).model_dump()
+                result = await connection.execute(q)
+                rows = result.fetchall()
+
+                if not rows:
+                    raise EntityNotFoundError(entity="Role")
+
+                role_data = {
+                    "id": rows[0].id,
+                    "name": rows[0].name,
+                    "description": rows[0].description,
+                    "permissions": [
+                        row.permission_name
+                        for row in rows
+                        if row.permission_name
+                    ],
+                }
+
+                await connection.commit()
+                return role_data
+
+            except Exception as e:
+                logger.error(f"Error updating role: {e}")
+                raise
 
     async def associate_permission(self, role: int, permission: str):
         async with self.db.engine.begin() as connection:

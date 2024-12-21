@@ -15,7 +15,7 @@ async def test_create_product(
     client: AsyncClient,
     sub_category: tuple,
     product_data: dict,
-    seller_access_token: str,
+    tester_access_token: str,
 ):
     category_id, subcategory_id = sub_category
     product_data["category_id"] = category_id
@@ -24,7 +24,7 @@ async def test_create_product(
     response = await client.post(
         "/api/v1/product/create",
         json=product_data,
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -34,7 +34,7 @@ async def test_create_product(
     product_id = response_json["id"]
     response = await client.delete(
         f"/api/v1/product/{product_id}",
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
@@ -64,7 +64,7 @@ async def test_create_product_without_permission(
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_create_product_without_required_fields(
-    client: AsyncClient, sub_category: tuple, seller_access_token: str
+    client: AsyncClient, sub_category: tuple, tester_access_token: str
 ):
     category_id, subcategory_id = sub_category
     product_data = {
@@ -75,7 +75,7 @@ async def test_create_product_without_required_fields(
     response = await client.post(
         "/api/v1/product/create",
         json=product_data,
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)
@@ -87,7 +87,7 @@ async def test_create_product_with_invalid_category_id(
     client: AsyncClient,
     sub_category: tuple,
     product_data: dict,
-    seller_access_token: str,
+    tester_access_token: str,
 ):
     _, subcategory_id = sub_category
     product_data["category_id"] = 12345  # Invalid category ID
@@ -96,7 +96,7 @@ async def test_create_product_with_invalid_category_id(
     response = await client.post(
         "/api/v1/product/create",
         json=product_data,
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     logger.debug(response_json)

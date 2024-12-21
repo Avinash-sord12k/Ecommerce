@@ -18,7 +18,7 @@ from app.cart.models import (
 from app.cart.repository import CartRepository
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.utils import allowed_permissions
-from app.users.utils import get_user_id_from_token
+from app.users.utils import get_current_user_id
 
 router = APIRouter(prefix="/api/v1/cart", tags=["Cart"])
 
@@ -30,10 +30,15 @@ router = APIRouter(prefix="/api/v1/cart", tags=["Cart"])
     dependencies=[
         Depends(allowed_permissions(["create_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_cart(
     cart: CreateCartRequestModel,
-    user_id: int = (Depends(get_user_id_from_token)),
+    user_id: int = (Depends(get_current_user_id)),
 ):
     try:
         repo = CartRepository()
@@ -53,8 +58,13 @@ async def create_cart(
     dependencies=[
         Depends(allowed_permissions(["read_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def get_cart(id: int, user_id: int = (Depends(get_user_id_from_token))):
+async def get_cart(id: int, user_id: int = (Depends(get_current_user_id))):
     try:
         repo = CartRepository()
         cart = await repo.get(user_id, cart_id=id)
@@ -73,8 +83,13 @@ async def get_cart(id: int, user_id: int = (Depends(get_user_id_from_token))):
     dependencies=[
         Depends(allowed_permissions(["read_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def get_all_carts(user_id: int = (Depends(get_user_id_from_token))):
+async def get_all_carts(user_id: int = (Depends(get_current_user_id))):
     try:
         repo = CartRepository()
         carts = await repo.get_all(user_id)
@@ -93,10 +108,13 @@ async def get_all_carts(user_id: int = (Depends(get_user_id_from_token))):
     dependencies=[
         Depends(allowed_permissions(["delete_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
-async def delete_cart(
-    id: int, user_id: int = (Depends(get_user_id_from_token))
-):
+async def delete_cart(id: int, user_id: int = (Depends(get_current_user_id))):
     try:
         repo = CartRepository()
         cart_id = await repo.delete(user_id, cart_id=id)
@@ -117,11 +135,16 @@ async def delete_cart(
     dependencies=[
         Depends(allowed_permissions(["update_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def update_cart(
     id: int,
     cart: CreateCartRequestModel,
-    user_id: int = (Depends(get_user_id_from_token)),
+    user_id: int = (Depends(get_current_user_id)),
 ):
     try:
         repo = CartRepository()
@@ -143,10 +166,15 @@ async def update_cart(
     dependencies=[
         Depends(allowed_permissions(["update_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def add_item_to_cart(
     item: AddToCartRequestModel,
-    user_id: int = (Depends(get_user_id_from_token)),
+    user_id: int = (Depends(get_current_user_id)),
 ):
     try:
         repo = CartRepository()
@@ -168,11 +196,16 @@ async def add_item_to_cart(
     dependencies=[
         Depends(allowed_permissions(["update_cart"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def remove_item_from_cart(
     cart_id: int,
     product_id: int,
-    user_id: int = (Depends(get_user_id_from_token)),
+    user_id: int = (Depends(get_current_user_id)),
 ):
     try:
         repo = CartRepository()

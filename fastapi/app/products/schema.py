@@ -16,6 +16,7 @@ class Product(Base):
     slug = Column(String(60), unique=True, nullable=False, index=True)
     tags = Column(String(255), nullable=True)
     discount = Column(Float, default=0.0)
+    tax = Column(Float, default=0.0)
     stock = Column(Integer, nullable=False, default=0)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)

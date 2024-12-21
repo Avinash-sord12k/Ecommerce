@@ -23,7 +23,6 @@ from app.roles.models import (
     RoleUpdateModel,
 )
 from app.roles.repository import RoleRepository
-from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/role", tags=["Role"])
 
@@ -33,9 +32,14 @@ router = APIRouter(prefix="/api/v1/role", tags=["Role"])
     response_model=RoleResponseModel,
     status_code=HTTP_201_CREATED,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["create_role"])),
     ],
+    description="Create a new role with no initial permissions",
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_role(role: RoleCreateModel):
     try:
@@ -54,9 +58,14 @@ async def create_role(role: RoleCreateModel):
     response_model=AllRolesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_role"])),
     ],
+    description="Get all roles with their basic information",
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_all_roles():
     try:
@@ -73,9 +82,14 @@ async def get_all_roles():
     response_model=RoleResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_role"])),
     ],
+    description="Get a role by ID including its permissions",
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_role_by_id(id: int):
     try:
@@ -94,9 +108,14 @@ async def get_role_by_id(id: int):
     response_model=RoleResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["update_role"])),
     ],
+    description="Update a role's information and permissions",
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def update_role(id: int, role: RoleUpdateModel):
     try:
@@ -114,9 +133,14 @@ async def update_role(id: int, role: RoleUpdateModel):
     "/{id}",
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_role"])),
     ],
+    description="Delete a role and its permission associations",
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def delete_role(id: int):
     try:

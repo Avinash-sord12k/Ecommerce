@@ -29,7 +29,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     def has_previous(self) -> bool:
         return self.page > 1
 
-    @field_validator("page", "page_size", "total", mode="before")
+    @field_validator("page", "page_size", mode="before")
     def validate_positive(cls, value: int) -> int:
         if value < 1:
             raise ValueError("Value must be greater than 0")

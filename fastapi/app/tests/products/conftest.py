@@ -27,6 +27,7 @@ def product_data():
         "slug": str(uuid4()),
         "tags": str(uuid4()),
         "discount": 5,
+        "tax": 18,
         "stock": 300,
         "category_id": None,
         "sub_category_id": None,
@@ -97,7 +98,7 @@ async def product(
     client: AsyncClient,
     sub_category: tuple,
     product_data: dict,
-    seller_access_token: str,
+    tester_access_token: str,
 ):
     category_id, subcategory_id = sub_category
     product_data["category_id"] = category_id
@@ -106,7 +107,7 @@ async def product(
     response = await client.post(
         "/api/v1/product/create",
         json=product_data,
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_201_CREATED
@@ -117,7 +118,7 @@ async def product(
     product_id = response_json["id"]
     response = await client.delete(
         f"/api/v1/product/{product_id}",
-        headers={"Authorization": f"Bearer {seller_access_token}"},
+        headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
     assert response.status_code == HTTP_200_OK

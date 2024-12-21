@@ -26,9 +26,9 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserLoginResponse(BaseModel):
+class UserLoginLogoutResponse(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
 
 
 class UserRead(BaseModel):

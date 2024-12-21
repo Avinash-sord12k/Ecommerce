@@ -17,7 +17,6 @@ from app.permissions.models import (
 )
 from app.permissions.repository import PermissionRepository
 from app.permissions.utils import allowed_permissions
-from app.users.utils import oauth2scheme
 
 router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
 
@@ -27,9 +26,13 @@ router = APIRouter(prefix="/api/v1/permission", tags=["Permission"])
     response_model=PermissionResponseModel,
     status_code=HTTP_201_CREATED,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["create_permission"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def create_permission(permission: PermissionCreateModel):
     try:
@@ -50,9 +53,13 @@ async def create_permission(permission: PermissionCreateModel):
     response_model=AllPermissionsResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_permission"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_all_permissions():
     try:
@@ -69,9 +76,13 @@ async def get_all_permissions():
     response_model=PermissionResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["read_permission"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def get_permission_by_id(id: int):
     try:
@@ -89,9 +100,13 @@ async def get_permission_by_id(id: int):
     "/{id}",
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(oauth2scheme),
         Depends(allowed_permissions(["delete_permission"])),
     ],
+    openapi_extra={
+        "security": [
+            {"cookieAuth": [], "oauth2Auth": []},
+        ]
+    },
 )
 async def delete_permission(id: int):
     try:
