@@ -13,7 +13,7 @@ async def test_get_all_carts(
     client: AsyncClient, cart: dict, tester_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart/get-all",
+        "/api/v1/cart",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -45,7 +45,7 @@ async def test_get_all_carts_with_pagination(
     client: AsyncClient, cart: dict, tester_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart/get-all?page=1&page_size=5",
+        "/api/v1/cart?page=1&page_size=5",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -61,7 +61,7 @@ async def test_get_cart_by_id(
 ):
     cart_id = cart["id"]
     response = await client.get(
-        f"/api/v1/cart/get-all?cart_id={cart_id}",
+        f"/api/v1/cart?cart_id={cart_id}",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -79,7 +79,7 @@ async def test_get_cart_with_items(
 ):
     cart_id = cart["id"]
     response = await client.get(
-        f"/api/v1/cart/get-all?cart_id={cart_id}&get_items=true",
+        f"/api/v1/cart?cart_id={cart_id}&get_items=true",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -105,7 +105,7 @@ async def test_get_cart_without_items(
 ):
     cart_id = cart["id"]
     response = await client.get(
-        f"/api/v1/cart/get-all?cart_id={cart_id}&get_items=false",
+        f"/api/v1/cart?cart_id={cart_id}&get_items=false",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -124,7 +124,7 @@ async def test_get_nonexistent_cart_id(
     client: AsyncClient, tester_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart/get-all?cart_id=99999",
+        "/api/v1/cart?cart_id=99999",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -140,7 +140,7 @@ async def test_get_all_carts_invalid_page(
     client: AsyncClient, tester_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart/get-all?page=0",
+        "/api/v1/cart?page=0",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
@@ -151,7 +151,7 @@ async def test_get_all_carts_without_permission(
     client: AsyncClient, cart: dict, seller_access_token: str
 ):
     response = await client.get(
-        "/api/v1/cart/get-all",
+        "/api/v1/cart",
         headers={"Authorization": f"Bearer {seller_access_token}"},
     )
     response_json = response.json()

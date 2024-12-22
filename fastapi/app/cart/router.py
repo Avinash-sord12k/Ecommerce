@@ -53,7 +53,7 @@ async def create_cart(
 
 
 @router.get(
-    "/get-all",
+    "",
     response_model=PaginatedResponse[CartsResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
@@ -95,7 +95,7 @@ async def get_all_carts(
 
 
 @router.delete(
-    "/{id}",
+    "",
     response_model=CartResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[

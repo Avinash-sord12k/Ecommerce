@@ -66,7 +66,7 @@ async def test_update_cart_without_id(
     )
     response_json = response.json()
     logger.debug(response_json)
-    assert response.status_code == HTTP_405_METHOD_NOT_ALLOWED
+    assert response.status_code == HTTP_404_NOT_FOUND
 
 
 @pytest.mark.asyncio(loop_scope="session")

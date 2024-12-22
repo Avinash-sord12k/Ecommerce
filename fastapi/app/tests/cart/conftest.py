@@ -71,7 +71,8 @@ async def cart(
 
     cart_id = response_json["id"]
     response = await client.delete(
-        f"/api/v1/cart/{cart_id}",
+        "/api/v1/cart",
+        params={"id": cart_id},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -193,7 +194,7 @@ async def cart_item(
 
     # Get the cart with items to return the item details
     response = await client.get(
-        f"/api/v1/cart/get-all?cart_id={cart['id']}&get_items=true",
+        f"/api/v1/cart?cart_id={cart['id']}&get_items=true",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
