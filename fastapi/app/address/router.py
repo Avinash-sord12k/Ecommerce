@@ -1,3 +1,4 @@
+from typing import Optional
 from venv import logger
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,13 +10,10 @@ from starlette.status import (
 )
 
 from app.address.exceptions import MaximumAddressLimitReachedError
-from app.address.models import (
-    AddressCreateModel,
-    AddressResponseModel,
-    AllAddressResponseModel,
-)
+from app.address.models import AddressCreateModel, AddressResponseModel
 from app.address.repository import AddressRepository
 from app.exceptions import EntityNotFoundError
+from app.models import PaginatedResponse, PaginationParams
 from app.permissions.utils import allowed_permissions
 from app.users.utils import get_current_user_id
 
@@ -51,33 +49,8 @@ async def create_address(
 
 
 @router.get(
-    "/get-by-id/{id}",
-    response_model=AddressResponseModel,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(allowed_permissions(["read_address"])),
-    ],
-    openapi_extra={
-        "security": [
-            {"cookieAuth": [], "oauth2Auth": []},
-        ]
-    },
-)
-async def get_address(id: int, user_id: int = Depends(get_current_user_id)):
-    try:
-        repo = AddressRepository()
-        address = await repo.get(user_id=user_id, address_id=id)
-        return AddressResponseModel(**address)
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.exception(f"While reading address {e}")
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.get(
     "/get-all",
-    response_model=AllAddressResponseModel,
+    response_model=PaginatedResponse[AddressResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(allowed_permissions(["read_address"])),
@@ -88,14 +61,28 @@ async def get_address(id: int, user_id: int = Depends(get_current_user_id)):
         ]
     },
 )
-async def get_all_address(user_id: int = Depends(get_current_user_id)):
+async def get_all_address(
+    pagination: PaginationParams = Depends(),
+    address_id: Optional[int] = None,
+    user_id: int = Depends(get_current_user_id),
+):
     try:
         repo = AddressRepository()
-        addresses = await repo.get_all(user_id=user_id)
-        return AllAddressResponseModel(
-            addresses=[
-                AddressResponseModel(**address) for address in addresses
-            ]
+        result = await repo.get_all(
+            user_id=user_id,
+            address_id=address_id,
+            page=pagination.page,
+            page_size=pagination.page_size,
+        )
+
+        return PaginatedResponse(
+            items=[
+                AddressResponseModel(**address) for address in result["items"]
+            ],
+            total=result["total"],
+            page=result["page"],
+            page_size=result["page_size"],
+            total_pages=result["total_pages"],
         )
     except Exception as e:
         logger.exception(f"While reading all addresses: {e}")
