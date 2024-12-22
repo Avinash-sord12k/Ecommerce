@@ -65,7 +65,7 @@ async def create_product(
     response_model=PaginatedResponse[ProductResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["read_product"])),
+        # Depends(allowed_permissions(["read_product"])),
     ],
     openapi_extra={
         "security": [
