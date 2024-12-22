@@ -57,7 +57,7 @@ async def create_role(role: RoleCreateModel):
 
 
 @router.get(
-    "/get-all",
+    "",
     response_model=AllRolesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[

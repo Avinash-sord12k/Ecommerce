@@ -17,7 +17,7 @@ async def test_get_all_roles(
 ):
     """Test basic role listing with pagination verification"""
     response = await client.get(
-        "/api/v1/role/get-all",
+        "/api/v1/role",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -51,7 +51,7 @@ async def test_get_all_roles_no_admin(
 ):
     """Test role listing access for non-admin users"""
     response = await client.get(
-        "/api/v1/role/get-all",
+        "/api/v1/role",
         headers={"Authorization": f"Bearer {customer_access_token}"},
     )
     assert response.status_code == HTTP_200_OK
@@ -62,7 +62,7 @@ async def test_get_all_roles_no_admin(
     assert matching_role is not None
 
     response = await client.get(
-        "/api/v1/role/get-all",
+        "/api/v1/role",
         headers={"Authorization": f"Bearer {seller_access_token}"},
     )
     assert response.status_code == HTTP_200_OK
@@ -79,7 +79,7 @@ async def test_get_all_roles_pagination(
     """Test pagination functionality and role_id filtering"""
     # Test pagination
     response = await client.get(
-        "/api/v1/role/get-all?page=1&page_size=2",
+        "/api/v1/role?page=1&page_size=2",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -92,7 +92,7 @@ async def test_get_all_roles_pagination(
 
     # Test with role_id filter
     response = await client.get(
-        f"/api/v1/role/get-all?role_id={role['id']}",
+        f"/api/v1/role?role_id={role['id']}",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -109,7 +109,7 @@ async def test_get_all_roles_with_permissions(
     """Test role listing with permissions included"""
     # Test with permissions included
     response = await client.get(
-        "/api/v1/role/get-all?include_permissions=true",
+        "/api/v1/role?include_permissions=true",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -122,7 +122,7 @@ async def test_get_all_roles_with_permissions(
 
     # Test with both role_id and permissions
     response = await client.get(
-        f"/api/v1/role/get-all?role_id={role['id']}&include_permissions=true",
+        f"/api/v1/role?role_id={role['id']}&include_permissions=true",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -145,21 +145,21 @@ async def test_get_all_roles_invalid_params(
     """Test invalid parameter handling"""
     # Test invalid page number
     response = await client.get(
-        "/api/v1/role/get-all?page=0",
+        "/api/v1/role?page=0",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
     # Test invalid page size
     response = await client.get(
-        "/api/v1/role/get-all?page_size=0",
+        "/api/v1/role?page_size=0",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
     # Test page size exceeding maximum
     response = await client.get(
-        "/api/v1/role/get-all?page_size=101",
+        "/api/v1/role?page_size=101",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
@@ -171,7 +171,7 @@ async def test_get_all_roles_empty_results(
 ):
     """Test cases that should return empty results"""
     response = await client.get(
-        "/api/v1/role/get-all?role_id=999999",
+        "/api/v1/role?role_id=999999",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -189,7 +189,7 @@ async def test_get_all_roles_performance(
     # Test basic request
     start_time = time.time()
     response = await client.get(
-        "/api/v1/role/get-all",
+        "/api/v1/role",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     basic_time = time.time() - start_time
@@ -198,7 +198,7 @@ async def test_get_all_roles_performance(
     # Test with permissions
     start_time = time.time()
     response = await client.get(
-        "/api/v1/role/get-all?include_permissions=true",
+        "/api/v1/role?include_permissions=true",
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     permission_time = time.time() - start_time
