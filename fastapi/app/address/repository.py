@@ -7,9 +7,10 @@ from app.address.schema import Address
 from app.config import MAXIMUM_ADDRESS_CREATION_LIMIT_PER_USER
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
+from app.repository import BaseRepository
 
 
-class AddressRepository:
+class AddressRepository(BaseRepository):
     def __init__(self):
         self.db = DatabaseManager._instance
 
@@ -79,21 +80,29 @@ class AddressRepository:
                 logger.error(f"Error getting address: {e}")
                 raise e
 
-    async def get_all(self, user_id: int):
-        async with self.db.engine.begin() as connection:
-            try:
-                q = select(Address).where(Address.user_id == user_id)
-                result = await connection.execute(q)
-                all_addresses = [
-                    address._asdict() for address in result.fetchall()
-                ]
-                return all_addresses
-            except exc.SQLAlchemyError as e:
-                logger.exception(f"Error getting address: {e}")
-                raise e
-            except Exception as e:
-                logger.error(f"Error getting address: {e}")
-                raise e
+    async def get_all(
+        self,
+        user_id: int,
+        address_id: int | None = None,
+        page: int = 1,
+        page_size: int = 10,
+    ):
+        try:
+            query = select(Address).where(Address.user_id == user_id)
+            if address_id is not None:
+                query = query.where(Address.id == address_id)
+
+            items, total = await self.get_paginated(query, page, page_size)
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size,
+            }
+        except Exception as e:
+            logger.error(f"Error getting addresses: {e}")
+            raise e
 
     async def update(
         self, user_id: int, address_id: int, address: AddressCreateModel
