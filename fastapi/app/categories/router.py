@@ -54,7 +54,7 @@ async def create_category(category: CategoryCreateModel):
     response_model=CategoryResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["read_category"])),
+        # Depends(allowed_permissions(["read_category"])),
     ],
     openapi_extra={
         "security": [
@@ -79,7 +79,7 @@ async def get_category_by_id(id: int):
     response_model=AllCategoriesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
-        Depends(allowed_permissions(["read_category"])),
+        # Depends(allowed_permissions(["read_category"])),
     ],
     openapi_extra={
         "security": [

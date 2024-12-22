@@ -44,3 +44,31 @@ async def address(
     response_json = response.json()
     logger.debug(response_json)
     assert response.status_code == HTTP_200_OK
+
+
+@pytest_asyncio.fixture(scope="session")
+async def multiple_addresses(
+    client: AsyncClient,
+    create_address_request_payload: dict,
+    tester_access_token: str,
+):
+    created_addresses = []
+    for _ in range(4):
+        payload = create_address_request_payload.copy()
+        payload["name"] = str(uuid4())
+        response = await client.post(
+            "/api/v1/address/create",
+            json=payload,
+            headers={"Authorization": f"Bearer {tester_access_token}"},
+        )
+        assert response.status_code == HTTP_201_CREATED
+        created_addresses.append(response.json())
+
+    yield created_addresses
+
+    for address in created_addresses:
+        response = await client.delete(
+            f"/api/v1/address/{address['id']}",
+            headers={"Authorization": f"Bearer {tester_access_token}"},
+        )
+        assert response.status_code == HTTP_200_OK
