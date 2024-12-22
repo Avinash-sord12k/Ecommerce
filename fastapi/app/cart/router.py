@@ -10,13 +10,14 @@ from starlette.status import (
 
 from app.cart.models import (
     AddToCartRequestModel,
-    AllCartsResponseModel,
     CartResponseModel,
+    CartsResponseModel,
     CreateCartRequestModel,
     SingleCartResponseModel,
 )
 from app.cart.repository import CartRepository
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.models import PaginatedResponse, PaginationParams
 from app.permissions.utils import allowed_permissions
 from app.users.utils import get_current_user_id
 
@@ -52,33 +53,8 @@ async def create_cart(
 
 
 @router.get(
-    "/get-by-id/{id}",
-    response_model=SingleCartResponseModel,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(allowed_permissions(["read_cart"])),
-    ],
-    openapi_extra={
-        "security": [
-            {"cookieAuth": [], "oauth2Auth": []},
-        ]
-    },
-)
-async def get_cart(id: int, user_id: int = (Depends(get_current_user_id))):
-    try:
-        repo = CartRepository()
-        cart = await repo.get(user_id, cart_id=id)
-        return SingleCartResponseModel(**cart)
-    except EntityIntegrityError as e:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error getting cart: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
     "/get-all",
-    response_model=AllCartsResponseModel,
+    response_model=PaginatedResponse[CartsResponseModel],
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(allowed_permissions(["read_cart"])),
@@ -89,16 +65,27 @@ async def get_cart(id: int, user_id: int = (Depends(get_current_user_id))):
         ]
     },
 )
-async def get_all_carts(user_id: int = (Depends(get_current_user_id))):
+async def get_all_carts(
+    pagination: PaginationParams = Depends(),
+    user_id: int = Depends(get_current_user_id),
+):
     try:
         repo = CartRepository()
-        carts = await repo.get_all(user_id)
-        return AllCartsResponseModel(carts=carts)
+        result = await repo.get_all(
+            user_id, page=pagination.page, page_size=pagination.page_size
+        )
+        logger.debug(f"Get all carts result: {result}")
+        return PaginatedResponse[CartsResponseModel](**result)
     except EntityIntegrityError as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting all carts: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error getting all carts: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error getting carts: {str(e)}",
+        )
 
 
 @router.delete(

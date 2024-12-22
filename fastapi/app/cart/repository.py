@@ -1,16 +1,18 @@
 import datetime
+from math import ceil
 
 from loguru import logger
-from sqlalchemy import delete, exc, insert, select, update
+from sqlalchemy import delete, exc, func, insert, select, update
 
 from app.cart.models import AddToCartRequestModel, CreateCartRequestModel
 from app.cart.schema import Cart, CartItems, CartStatus
 from app.database import DatabaseManager
 from app.exceptions import EntityNotFoundError
 from app.products.schema import Product
+from app.repository import BaseRepository
 
 
-class CartRepository:
+class CartRepository(BaseRepository):
     def __init__(self):
         self.db = DatabaseManager._instance
 
@@ -89,21 +91,91 @@ class CartRepository:
                 logger.error(f"Error getting cart: {e=}")
                 raise e
 
-    async def get_all(self, user_id: int):
+    async def _get_total_carts(self, connection, user_id: int) -> int:
+        """Get total number of carts for a user."""
+        count_query = select(func.count(Cart.id)).where(
+            Cart.user_id == user_id
+        )
+        return await connection.scalar(count_query)
+
+    async def _get_paginated_carts(
+        self, connection, user_id: int, offset: int, limit: int
+    ) -> list[dict]:
+        """Get paginated cart records."""
+        carts_query = (
+            select(Cart)
+            .where(Cart.user_id == user_id)
+            .order_by(Cart.id)
+            .offset(offset)
+            .limit(limit)
+        )
+        carts_result = await connection.execute(carts_query)
+        return [cart._asdict() for cart in carts_result.fetchall()]
+
+    async def _get_cart_items(
+        self, connection, cart_ids: list[int]
+    ) -> list[dict]:
+        """Get items for multiple carts."""
+        if not cart_ids:
+            return []
+
+        items_query = select(CartItems).where(CartItems.cart_id.in_(cart_ids))
+        items_result = await connection.execute(items_query)
+        return [item._asdict() for item in items_result.fetchall()]
+
+    async def _associate_items_with_carts(
+        self, carts: list[dict], items: list[dict]
+    ) -> list[dict]:
+        """Associate items with their respective carts."""
+        items_by_cart = {}
+        for item in items:
+            cart_id = item["cart_id"]
+            if cart_id not in items_by_cart:
+                items_by_cart[cart_id] = []
+            items_by_cart[cart_id].append(item)
+
+        for cart in carts:
+            cart["items"] = items_by_cart.get(cart["id"], [])
+            if cart.get("reminder_date"):
+                try:
+                    cart = await self.update_cart_status(cart)
+                except Exception as e:
+                    logger.error(f"Error updating cart status: {e}")
+
+        return carts
+
+    async def get_all(
+        self, user_id: int, page: int = 1, page_size: int = 10
+    ) -> dict:
+        """Get paginated list of carts with their items."""
         async with self.db.engine.begin() as connection:
             try:
-                q = select(Cart).where(Cart.user_id == user_id)
-                result = await connection.execute(q)
-                all_carts = [
-                    await self.update_cart_status(cart._asdict())
-                    for cart in result.fetchall()
-                ]
-                return all_carts
+                total = await self._get_total_carts(connection, user_id)
+
+                offset = (page - 1) * page_size
+                carts = await self._get_paginated_carts(
+                    connection, user_id, offset, page_size
+                )
+
+                cart_ids = [cart["id"] for cart in carts]
+                items = await self._get_cart_items(connection, cart_ids)
+                carts = await self._associate_items_with_carts(carts, items)
+
+                return {
+                    "items": carts if carts else [],
+                    "total": total,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": max(
+                        ceil(total / page_size) if total > 0 else 1, 1
+                    ),
+                }
+
             except exc.SQLAlchemyError as e:
-                logger.exception(f"Error getting cart: {e=}")
+                logger.exception(f"Error getting carts: {e=}")
                 raise e
             except Exception as e:
-                logger.error(f"Error getting cart: {e=}")
+                logger.error(f"Error getting carts: {e=}")
                 raise e
 
     async def delete(self, user_id: int, cart_id: int):

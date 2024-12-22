@@ -167,3 +167,26 @@ async def product(
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == product_id
+
+
+@pytest_asyncio.fixture(scope="module")
+async def cart_with_items(
+    client: AsyncClient,
+    cart: dict,
+    add_to_cart_request_payload: dict,
+    product: dict,
+    tester_access_token: str,
+):
+    cart_id = cart["id"]
+    add_to_cart_request_payload["cart_id"] = cart_id
+    add_to_cart_request_payload["product_id"] = product["id"]
+
+    response = await client.post(
+        "/api/v1/cart/add-item",
+        json=add_to_cart_request_payload,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+
+    return cart
