@@ -66,13 +66,19 @@ async def create_cart(
     },
 )
 async def get_all_carts(
+    cart_id: int = None,
+    get_items: bool = False,
     pagination: PaginationParams = Depends(),
     user_id: int = Depends(get_current_user_id),
 ):
     try:
         repo = CartRepository()
         result = await repo.get_all(
-            user_id, page=pagination.page, page_size=pagination.page_size
+            user_id,
+            cart_id=cart_id,
+            get_items=get_items,
+            page=pagination.page,
+            page_size=pagination.page_size,
         )
         logger.debug(f"Get all carts result: {result}")
         return PaginatedResponse[CartsResponseModel](**result)

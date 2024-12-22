@@ -99,16 +99,14 @@ class CartRepository(BaseRepository):
         return await connection.scalar(count_query)
 
     async def _get_paginated_carts(
-        self, connection, user_id: int, offset: int, limit: int
+        self, connection, cart_id: int, user_id: int, offset: int, limit: int
     ) -> list[dict]:
         """Get paginated cart records."""
-        carts_query = (
-            select(Cart)
-            .where(Cart.user_id == user_id)
-            .order_by(Cart.id)
-            .offset(offset)
-            .limit(limit)
-        )
+        carts_query = select(Cart).where(Cart.user_id == user_id)
+        if cart_id:
+            carts_query = carts_query.where(Cart.id == cart_id)
+
+        carts_query = carts_query.order_by(Cart.id).offset(offset).limit(limit)
         carts_result = await connection.execute(carts_query)
         return [cart._asdict() for cart in carts_result.fetchall()]
 
@@ -136,30 +134,45 @@ class CartRepository(BaseRepository):
 
         for cart in carts:
             cart["items"] = items_by_cart.get(cart["id"], [])
-            if cart.get("reminder_date"):
-                try:
-                    cart = await self.update_cart_status(cart)
-                except Exception as e:
-                    logger.error(f"Error updating cart status: {e}")
 
         return carts
 
     async def get_all(
-        self, user_id: int, page: int = 1, page_size: int = 10
+        self,
+        user_id: int,
+        cart_id: int = None,
+        get_items: bool = True,
+        page: int = 1,
+        page_size: int = 10,
     ) -> dict:
         """Get paginated list of carts with their items."""
         async with self.db.engine.begin() as connection:
             try:
-                total = await self._get_total_carts(connection, user_id)
+                total = 1
+                if not cart_id:
+                    total = await self._get_total_carts(connection, user_id)
 
                 offset = (page - 1) * page_size
                 carts = await self._get_paginated_carts(
-                    connection, user_id, offset, page_size
+                    connection, cart_id, user_id, offset, page_size
                 )
 
                 cart_ids = [cart["id"] for cart in carts]
-                items = await self._get_cart_items(connection, cart_ids)
-                carts = await self._associate_items_with_carts(carts, items)
+
+                if get_items:
+                    items = await self._get_cart_items(connection, cart_ids)
+                    carts = await self._associate_items_with_carts(
+                        carts, items
+                    )
+
+                for cart in carts:
+                    if not cart.get("reminder_date"):
+                        continue
+
+                    try:
+                        cart = await self.update_cart_status(cart)
+                    except Exception as e:
+                        logger.error(f"Error updating cart status: {e}")
 
                 return {
                     "items": carts if carts else [],
