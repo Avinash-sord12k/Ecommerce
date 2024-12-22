@@ -71,7 +71,8 @@ async def cart(
 
     cart_id = response_json["id"]
     response = await client.delete(
-        f"/api/v1/cart/{cart_id}",
+        "/api/v1/cart",
+        params={"id": cart_id},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -167,3 +168,47 @@ async def product(
     response_json = response.json()
     assert response.status_code == HTTP_200_OK
     assert response_json["id"] == product_id
+
+
+@pytest_asyncio.fixture(scope="module")
+async def cart_item(
+    client: AsyncClient,
+    cart: dict,
+    product: dict,
+    add_to_cart_request_payload: dict,
+    tester_access_token: str,
+):
+    """Fixture to create a cart item and clean it up after tests."""
+    # Update the payload with actual cart and product IDs
+    add_to_cart_request_payload["cart_id"] = cart["id"]
+    add_to_cart_request_payload["product_id"] = product["id"]
+
+    # Add item to cart
+    response = await client.post(
+        "/api/v1/cart/add-item",
+        json=add_to_cart_request_payload,
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+
+    # Get the cart with items to return the item details
+    response = await client.get(
+        f"/api/v1/cart?cart_id={cart['id']}&get_items=true",
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
+    response_json = response.json()
+    assert response.status_code == HTTP_200_OK
+
+    cart_items = response_json["items"][0]["items"]
+    assert len(cart_items) > 0
+    cart_item = cart_items[0]
+
+    yield cart_item
+
+    # Cleanup: Remove item from cart
+    response = await client.delete(
+        f"/api/v1/cart/remove-item/{cart['id']}/{product['id']}",
+        headers={"Authorization": f"Bearer {tester_access_token}"},
+    )
+    assert response.status_code == HTTP_200_OK

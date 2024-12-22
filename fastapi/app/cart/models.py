@@ -10,6 +10,7 @@ from pydantic import (
 )
 
 from app.cart.schema import CartStatus
+from app.models import PaginatedResponse
 
 
 class CreateCartRequestModel(BaseModel):
@@ -48,6 +49,15 @@ class AddToCartRequestModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CartItemsResponseModel(BaseModel):
+    id: int = Field(..., description="ID of the cart item")
+    cart_id: int = Field(..., description="ID of the cart")
+    product_id: int = Field(..., description="ID of the product")
+    quantity: int = Field(..., description="Quantity of the product")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CartsResponseModel(BaseModel):
     id: int = Field(..., description="ID of the cart")
     name: str = Field(..., description="Name of the cart")
@@ -55,26 +65,15 @@ class CartsResponseModel(BaseModel):
         None, description="Reminder date of the cart"
     )
     status: CartStatus = Field(..., description="Status of the cart")
+    items: list[CartItemsResponseModel] = Field(
+        default_factory=list, description="Cart items"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
     @field_serializer("reminder_date")
     def serialize_reminder_date(self, value: datetime):
         return str(value)
-
-
-class AllCartsResponseModel(BaseModel):
-    carts: list[CartsResponseModel]
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class CartItemsResponseModel(BaseModel):
-    id: int = Field(..., description="ID of the cart item")
-    product_id: int = Field(..., description="ID of the product")
-    quantity: int = Field(..., description="Quantity of the product")
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class SingleCartResponseModel(CartsResponseModel):

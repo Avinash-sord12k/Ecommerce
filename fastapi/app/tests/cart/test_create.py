@@ -27,7 +27,8 @@ async def test_create_cart(
 
     cart_id = response_json["id"]
     response = await client.delete(
-        f"/api/v1/cart/{cart_id}",
+        f"/api/v1/cart",
+        params={"id": cart_id},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
