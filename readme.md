@@ -60,6 +60,29 @@ chmod +x ./deploy/local/scripts/docker.run.sh
 ./deploy/local/scripts/docker.run.sh
 ```
 
+## Service Endpoints
+
+After running the application, you can access the following services:
+
+### Main Services
+- FastAPI Application: http://fastapi.docker.localhost
+- Traefik Dashboard: http://localhost:8003
+- PGAdmin: http://pgadmin.docker.localhost
+
+### API Documentation
+- Swagger UI: http://fastapi.docker.localhost/api/docs
+- ReDoc: http://fastapi.docker.localhost/api/redoc
+
+### Notes
+- Make sure to add the following entries to your `/etc/hosts` file:
+  ```
+  127.0.0.1    fastapi.docker.localhost
+  127.0.0.1    pgadmin.docker.localhost
+  ```
+- For PGAdmin access:
+  - Username: admin
+  - Password: admin
+
 ## Running Tests
 ```bash
 chmod +x ./deploy/local/scripts/docker.build.sh
