@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models import PaginatedResponse
+
 
 class PermissionCreateModel(BaseModel):
     name: str = Field(
@@ -20,9 +22,6 @@ class PermissionResponseModel(BaseModel):
         None, max_length=255, description="Description of the permission"
     )
     model_config = ConfigDict(from_attributes=True)
-
-
-from app.models import PaginatedResponse
 
 
 class AllPermissionsResponseModel(PaginatedResponse[PermissionResponseModel]):
