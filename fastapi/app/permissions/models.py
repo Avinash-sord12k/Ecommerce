@@ -22,5 +22,8 @@ class PermissionResponseModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AllPermissionsResponseModel(BaseModel):
-    permissions: list[PermissionResponseModel]
+from app.models import PaginatedResponse
+
+
+class AllPermissionsResponseModel(PaginatedResponse[PermissionResponseModel]):
+    pass
