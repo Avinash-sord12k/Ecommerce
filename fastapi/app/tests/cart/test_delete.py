@@ -6,6 +6,7 @@ from starlette.status import (
     HTTP_201_CREATED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_405_METHOD_NOT_ALLOWED,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
@@ -27,7 +28,8 @@ async def test_delete_cart(
 
     cart_id = response_json["id"]
     response = await client.delete(
-        f"/api/v1/cart/{cart_id}",
+        "/api/v1/cart",
+        params={"id": cart_id},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
@@ -42,7 +44,8 @@ async def test_delete_someone_elses_cart(
     customer_access_token: str,
 ):
     response = await client.delete(
-        f"/api/v1/cart/{cart['id']}",
+        "/api/v1/cart",
+        params={"id": cart["id"]},
         headers={"Authorization": f"Bearer {customer_access_token}"},
     )
     response_json = response.json()
@@ -60,7 +63,7 @@ async def test_delete_cart_without_id(
     )
     response_json = response.json()
     logger.debug(response_json)
-    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -68,7 +71,8 @@ async def test_delete_cart_with_invalid_id(
     client: AsyncClient, tester_access_token: str
 ):
     response = await client.delete(
-        "/api/v1/cart/invalid_id",
+        "/api/v1/cart",
+        params={"id": "invalid_id"},
         headers={"Authorization": f"Bearer {tester_access_token}"},
     )
     response_json = response.json()
