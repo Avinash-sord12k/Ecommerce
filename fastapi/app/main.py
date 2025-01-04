@@ -65,6 +65,24 @@ app.add_middleware(
     allow_headers=APP_CONFIGS["allow_headers"],
 )
 
+app.get(
+    "/api/v1/welcome",
+    response_model=str,
+    response_model_exclude_unset=True,
+    tags=["Default"],
+)(lambda: "Welcome to FastAPI v1")
+
+
+# Routers
+app.include_router(router=users_router)
+app.include_router(router=address_router)
+app.include_router(router=roles_router)
+app.include_router(router=permissions_router)
+app.include_router(router=category_router)
+app.include_router(router=subcategory_router)
+app.include_router(router=products_router)
+app.include_router(router=cart_router)
+
 
 # Define exception handlers
 @app.exception_handler(RequestValidationError)
@@ -87,22 +105,3 @@ async def response_validation_exception_handler(
     raise HTTPException(
         status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=detail
     )
-
-
-app.get(
-    "/api/v1/welcome",
-    response_model=str,
-    response_model_exclude_unset=True,
-    tags=["Default"],
-)(lambda: "Welcome to FastAPI v1")
-
-
-# Routers
-app.include_router(router=users_router)
-app.include_router(router=address_router)
-app.include_router(router=roles_router)
-app.include_router(router=permissions_router)
-app.include_router(router=category_router)
-app.include_router(router=subcategory_router)
-app.include_router(router=products_router)
-app.include_router(router=cart_router)
