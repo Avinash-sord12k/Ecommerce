@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from app.database import DatabaseManager
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
 from app.permissions.schema import Permission, role_permission_association
+from app.repository import BaseRepository
 from app.roles.models import (
     AllRolesResponseModel,
     RoleCreateModel,
@@ -14,7 +15,7 @@ from app.roles.models import (
 from app.roles.schema import Role
 
 
-class RoleRepository:
+class RoleRepository(BaseRepository):
     def __init__(self) -> None:
         self.db = DatabaseManager._instance
 
@@ -41,22 +42,104 @@ class RoleRepository:
                 logger.error(f"Error creating role: {e=}")
                 raise e
 
-    async def get_all(self) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            result = await connection.execute(select(Role))
-            roles = result.fetchall()
-            return AllRolesResponseModel(
-                roles=[
-                    RoleResponseModel(
-                        id=role.id,
-                        name=role.name,
-                        description=role.description,
-                    ).model_dump()
-                    for role in roles
-                ]
-            ).model_dump()
+    async def _build_base_query(self, include_permissions: bool) -> select:
+        """Build the base query with or without permissions join."""
+        if include_permissions:
+            return (
+                select(Role, Permission.name.label("permission_name"))
+                .outerjoin(
+                    role_permission_association,
+                    Role.id == role_permission_association.c.role_id,
+                )
+                .outerjoin(
+                    Permission,
+                    Permission.id
+                    == role_permission_association.c.permission_id,
+                )
+            )
+        return select(Role)
 
-    async def get_by_id(self, id: int) -> RoleResponseModel:
+    async def _apply_role_filter(
+        self, query: select, role_id: int | None
+    ) -> select:
+        """Apply role_id filter to query if provided."""
+        if role_id is not None:
+            return query.where(Role.id >= role_id)
+        return query
+
+    async def _process_items_with_permissions(
+        self, items: list[dict]
+    ) -> list[dict]:
+        """Process items to include grouped permissions."""
+        role_permissions = {}
+        for item in items:
+            role_id = item["id"]
+            if role_id not in role_permissions:
+                role_permissions[role_id] = {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "description": item["description"],
+                    "permissions": [],
+                }
+            if item["permission_name"]:
+                role_permissions[role_id]["permissions"].append(
+                    item["permission_name"]
+                )
+        return list(role_permissions.values())
+
+    async def get_all(
+        self,
+        page: int = 1,
+        page_size: int = 10,
+        role_id: int = None,
+        include_permissions: bool = False,
+    ) -> dict:
+        """
+        Get all roles with pagination and optional permissions.
+
+        Args:
+            page: Current page number
+            page_size: Number of items per page
+            role_id: Optional role ID filter
+            include_permissions: Whether to include permissions in the response
+        """
+        async with self.db.engine.begin() as connection:
+            try:
+                # Build and configure query
+                query = await self._build_base_query(include_permissions)
+                query = await self._apply_role_filter(query, role_id)
+
+                # Get paginated results
+                items, total = await self.get_paginated(query, page, page_size)
+
+                # Process items if permissions are included
+                if include_permissions:
+                    items = await self._process_items_with_permissions(items)
+
+                # Create and return response
+                total_pages = (total + page_size - 1) // page_size
+
+                return AllRolesResponseModel(
+                    items=[
+                        RoleResponseModel(
+                            id=item["id"],
+                            name=item["name"],
+                            description=item["description"],
+                            permissions=item.get("permissions", []),
+                        )
+                        for item in items
+                    ],
+                    total=total,
+                    page=page,
+                    page_size=page_size,
+                    total_pages=total_pages,
+                ).model_dump()
+
+            except Exception as e:
+                logger.error(f"Error in get_all roles: {e}")
+                raise
+
+    async def get(self, id: int) -> RoleResponseModel:
         async with self.db.engine.begin() as connection:
             # Get role and join with permissions
             q = (
