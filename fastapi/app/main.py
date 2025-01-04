@@ -37,8 +37,8 @@ async def lifespan(app):
     await PermissionSeeder().run()
     await RoleSeeder().run()
     await UserSeeder().run()
-    await ProductSeeder().run()
     await CategorySeeder().run()
+    await ProductSeeder().run()
 
     os.makedirs(SHARED_FOLDER, exist_ok=True)
     yield

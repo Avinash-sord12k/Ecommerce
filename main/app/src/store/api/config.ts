@@ -1,12 +1,10 @@
 const DEV_API_ENDPOINTS = {
-  getProductsByCategory: "/api/v1/product/get-by-category-id",
-  getProductsById: "/api/v1/product/get-by-id",
+  getProducts: "/api/v1/product",
   login: "/api/v1/users/login",
 };
 
 const PROD_API_ENDPOINTS = {
-  getProductsByCategory: "/api/v1/product/get-by-category-id",
-  getProductsById: "/api/v1/product/get-by-id",
+  getProducts: "/api/v1/product",
   login: "/api/v1/users/login",
 };
 

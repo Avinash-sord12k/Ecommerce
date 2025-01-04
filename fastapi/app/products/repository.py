@@ -43,6 +43,8 @@ class ProductRepository(BaseRepository):
                 stock=product.stock,
                 category_id=product.category_id,
                 is_active=product.is_active,
+                thumbnail=product.thumbnail,
+                images=product.images,
             )
             result = await connection.execute(q)
             created_product_id = result.inserted_primary_key[0]
@@ -78,6 +80,8 @@ class ProductRepository(BaseRepository):
             "category_id": lambda v: Product.category_id == v,
             "tags": lambda v: Product.tags.ilike(f"%{v}%"),
             "is_active": lambda v: Product.is_active == v,
+            "has_thumbnail": lambda v: Product.thumbnail.isnot(None),
+            "has_images": lambda v: Product.images.isnot(None),
         }
 
         # Apply filters

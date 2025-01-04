@@ -19,6 +19,7 @@ export const authApi = createApi({
       query: (body: FormData) => {
         return {
           url: API_ENDPOINTS.login,
+          params: {set_cookie: true},
           method: "POST",
           body,
         };

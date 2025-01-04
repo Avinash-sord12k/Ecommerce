@@ -15,6 +15,7 @@ activateEvent();
 const cacheName = "v1";
 
 const cacheClone = async (e) => {
+  if (e.request.method !== "GET") return;
   const res = await fetch(e.request);
   const resClone = res.clone();
 

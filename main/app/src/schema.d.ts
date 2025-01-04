@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Logout User */
+        get: operations["logout_user_api_v1_users_logout_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/me": {
         parameters: {
             query?: never;
@@ -83,23 +100,6 @@ export interface paths {
         put?: never;
         /** Create Address */
         post: operations["create_address_api_v1_address_create_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/address/get-by-id/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Address */
-        get: operations["get_address_api_v1_address_get_by_id__id__get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -166,7 +166,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Role */
+        /**
+         * Create Role
+         * @description Create a new role with no initial permissions
+         */
         post: operations["create_role_api_v1_role_create_post"];
         delete?: never;
         options?: never;
@@ -174,32 +177,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/role/get-all": {
+    "/api/v1/role": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get All Roles */
-        get: operations["get_all_roles_api_v1_role_get_all_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/role/get-by-id/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Role By Id */
-        get: operations["get_role_by_id_api_v1_role_get_by_id__id__get"];
+        /**
+         * Get All Roles
+         * @description Get all roles with pagination and optional role ID filter
+         */
+        get: operations["get_all_roles_api_v1_role_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -216,7 +205,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Role */
+        /**
+         * Update Role
+         * @description Update a role's information and permissions
+         */
         put: operations["update_role_api_v1_role_update__id__put"];
         post?: never;
         delete?: never;
@@ -235,7 +227,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete Role */
+        /**
+         * Delete Role
+         * @description Delete a role and its permission associations
+         */
         delete: operations["delete_role_api_v1_role__id__delete"];
         options?: never;
         head?: never;
@@ -259,7 +254,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/permission/get-all": {
+    "/api/v1/permission": {
         parameters: {
             query?: never;
             header?: never;
@@ -267,24 +262,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get All Permissions */
-        get: operations["get_all_permissions_api_v1_permission_get_all_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/permission/get-by-id/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Permission By Id */
-        get: operations["get_permission_by_id_api_v1_permission_get_by_id__id__get"];
+        get: operations["get_all_permissions_api_v1_permission_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -463,49 +441,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/product/get-by-id/{id}": {
+    "/api/v1/product": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Product By Id */
-        get: operations["get_product_by_id_api_v1_product_get_by_id__id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/product/get-by-category-id": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Product By Category Id */
-        get: operations["get_product_by_category_id_api_v1_product_get_by_category_id_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/product/get-by-subcategory-id": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Product By Sub Category Id */
-        get: operations["get_product_by_sub_category_id_api_v1_product_get_by_subcategory_id_get"];
+        /** Get Products */
+        get: operations["get_products_api_v1_product_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -565,24 +509,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/cart/get-by-id/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Cart */
-        get: operations["get_cart_api_v1_cart_get_by_id__id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/cart/get-all": {
+    "/api/v1/cart": {
         parameters: {
             query?: never;
             header?: never;
@@ -590,27 +517,11 @@ export interface paths {
             cookie?: never;
         };
         /** Get All Carts */
-        get: operations["get_all_carts_api_v1_cart_get_all_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/cart/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
+        get: operations["get_all_carts_api_v1_cart_get"];
         put?: never;
         post?: never;
         /** Delete Cart */
-        delete: operations["delete_cart_api_v1_cart__id__delete"];
+        delete: operations["delete_cart_api_v1_cart_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -765,16 +676,6 @@ export interface components {
              */
             user_id: number;
         };
-        /** AllAddressResponseModel */
-        AllAddressResponseModel: {
-            /** Addresses */
-            addresses: components["schemas"]["AddressResponseModel"][];
-        };
-        /** AllCartsResponseModel */
-        AllCartsResponseModel: {
-            /** Carts */
-            carts: components["schemas"]["CartsResponseModel"][];
-        };
         /** AllCategoriesResponseModel */
         AllCategoriesResponseModel: {
             /** Categories */
@@ -782,13 +683,37 @@ export interface components {
         };
         /** AllPermissionsResponseModel */
         AllPermissionsResponseModel: {
-            /** Permissions */
-            permissions: components["schemas"]["PermissionResponseModel"][];
+            /** Items */
+            items: components["schemas"]["PermissionResponseModel"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total Pages */
+            total_pages: number;
+            /** Has Next */
+            readonly has_next: boolean;
+            /** Has Previous */
+            readonly has_previous: boolean;
         };
         /** AllRolesResponseModel */
         AllRolesResponseModel: {
-            /** Roles */
-            roles: components["schemas"]["MinimalRoleResponseModel"][];
+            /** Items */
+            items: components["schemas"]["RoleResponseModel"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total Pages */
+            total_pages: number;
+            /** Has Next */
+            readonly has_next: boolean;
+            /** Has Previous */
+            readonly has_previous: boolean;
         };
         /** AllSubCategoriesResponseModel */
         AllSubCategoriesResponseModel: {
@@ -820,6 +745,11 @@ export interface components {
              * @description ID of the cart item
              */
             id: number;
+            /**
+             * Cart Id
+             * @description ID of the cart
+             */
+            cart_id: number;
             /**
              * Product Id
              * @description ID of the product
@@ -863,6 +793,11 @@ export interface components {
             reminder_date?: string | null;
             /** @description Status of the cart */
             status: components["schemas"]["CartStatus"];
+            /**
+             * Items
+             * @description Cart items
+             */
+            items?: components["schemas"]["CartItemsResponseModel"][];
         };
         /** CategoryCreateModel */
         CategoryCreateModel: {
@@ -928,9 +863,15 @@ export interface components {
             /**
              * Discount
              * @description Discount percentage
-             * @default 0
+             * @default 0.0
              */
             discount: number | string;
+            /**
+             * Tax
+             * @description Tax percentage
+             * @default 0.0
+             */
+            tax: number | string;
             /**
              * Stock
              * @description Available stock quantity
@@ -952,29 +893,55 @@ export interface components {
              * @default true
              */
             is_active: boolean;
+            /**
+             * Thumbnail
+             * @description URL or path of the thumbnail image
+             */
+            thumbnail?: string | null;
+            /**
+             * Images
+             * @description List of URLs or paths for the product images
+             */
+            images?: string[] | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** MinimalRoleResponseModel */
-        MinimalRoleResponseModel: {
-            /**
-             * Id
-             * @description ID of the role
-             */
-            id: number;
-            /**
-             * Name
-             * @description Name of the role
-             */
-            name: string;
-            /**
-             * Description
-             * @description Description of the role
-             */
-            description?: string;
+        /** PaginatedResponse[AddressResponseModel] */
+        PaginatedResponse_AddressResponseModel_: {
+            /** Items */
+            items: components["schemas"]["AddressResponseModel"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total Pages */
+            total_pages: number;
+            /** Has Next */
+            readonly has_next: boolean;
+            /** Has Previous */
+            readonly has_previous: boolean;
+        };
+        /** PaginatedResponse[CartsResponseModel] */
+        PaginatedResponse_CartsResponseModel_: {
+            /** Items */
+            items: components["schemas"]["CartsResponseModel"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total Pages */
+            total_pages: number;
+            /** Has Next */
+            readonly has_next: boolean;
+            /** Has Previous */
+            readonly has_previous: boolean;
         };
         /** PaginatedResponse[ProductResponseModel] */
         PaginatedResponse_ProductResponseModel_: {
@@ -1027,11 +994,6 @@ export interface components {
         /** ProductResponseModel */
         ProductResponseModel: {
             /**
-             * Id
-             * @description The unique identifier of the product
-             */
-            id: number;
-            /**
              * Name
              * @description The name of the product
              */
@@ -1042,15 +1004,10 @@ export interface components {
              */
             description?: string | null;
             /**
-             * User Id
-             * @description ID of the user
-             */
-            user_id: number;
-            /**
              * Price
-             * @description Price of the product
+             * @description Price of the product in INR
              */
-            price: string;
+            price?: string;
             /**
              * Slug
              * @description Unique slug for the product
@@ -1066,6 +1023,11 @@ export interface components {
              * @description Discount percentage
              */
             discount?: string;
+            /**
+             * Tax
+             * @description Tax percentage
+             */
+            tax?: string;
             /**
              * Stock
              * @description Available stock quantity
@@ -1087,6 +1049,23 @@ export interface components {
              * @default true
              */
             is_active: boolean;
+            /**
+             * Thumbnail
+             * @description URL or path of the thumbnail image
+             */
+            thumbnail?: string | null;
+            /**
+             * Images
+             * @description List of URLs or paths for the product images
+             */
+            images?: string[] | null;
+            /**
+             * Id
+             * @description The unique identifier of the product
+             */
+            id: number;
+            /** Computed Price */
+            readonly computed_price: string;
         };
         /** RoleCreateModel */
         RoleCreateModel: {
@@ -1104,11 +1083,6 @@ export interface components {
         /** RoleResponseModel */
         RoleResponseModel: {
             /**
-             * Id
-             * @description ID of the role
-             */
-            id: number;
-            /**
              * Name
              * @description Name of the role
              */
@@ -1119,10 +1093,15 @@ export interface components {
              */
             description?: string;
             /**
-             * Permission Ids
-             * @description List of permission IDs
+             * Id
+             * @description ID of the role
              */
-            permission_ids?: number[] | null;
+            id: number;
+            /**
+             * Permissions
+             * @description List of permission names
+             */
+            permissions?: string[] | null;
         };
         /** RoleUpdateModel */
         RoleUpdateModel: {
@@ -1137,32 +1116,10 @@ export interface components {
              */
             description?: string | null;
             /**
-             * Permission Ids
-             * @description List of permission IDs
+             * Permissions
+             * @description List of permission names
              */
-            permission_ids?: number[] | null;
-        };
-        /** SingleCartResponseModel */
-        SingleCartResponseModel: {
-            /**
-             * Id
-             * @description ID of the cart
-             */
-            id: number;
-            /**
-             * Name
-             * @description Name of the cart
-             */
-            name: string;
-            /**
-             * Reminder Date
-             * @description Reminder date of the cart
-             */
-            reminder_date?: string | null;
-            /** @description Status of the cart */
-            status: components["schemas"]["CartStatus"];
-            /** Items */
-            items: components["schemas"]["CartItemsResponseModel"][];
+            permissions?: string[] | null;
         };
         /** SubCategoryCreateModel */
         SubCategoryCreateModel: {
@@ -1201,7 +1158,7 @@ export interface components {
              * Name
              * @description The name of the product
              */
-            name?: string | null;
+            name: string;
             /**
              * Description
              * @description Product description
@@ -1209,14 +1166,14 @@ export interface components {
             description?: string | null;
             /**
              * Price
-             * @description Price of the product
+             * @description Price of the product in INR
              */
-            price?: number | string | null;
+            price?: number | string;
             /**
              * Slug
              * @description Unique slug for the product
              */
-            slug?: string | null;
+            slug?: string;
             /**
              * Tags
              * @description Comma-separated product tags
@@ -1225,19 +1182,25 @@ export interface components {
             /**
              * Discount
              * @description Discount percentage
-             * @default 0
+             * @default 0.0
              */
-            discount: number | string | null;
+            discount: number | string;
+            /**
+             * Tax
+             * @description Tax percentage
+             * @default 0.0
+             */
+            tax: number | string;
             /**
              * Stock
              * @description Available stock quantity
              */
-            stock?: number | null;
+            stock: number;
             /**
              * Category Id
              * @description ID of the category
              */
-            category_id?: number | null;
+            category_id: number;
             /**
              * Sub Category Ids
              * @description List of sub-category IDs
@@ -1246,8 +1209,19 @@ export interface components {
             /**
              * Is Active
              * @description Indicates if the product is active
+             * @default true
              */
-            is_active?: boolean | null;
+            is_active: boolean;
+            /**
+             * Thumbnail
+             * @description URL or path of the thumbnail image
+             */
+            thumbnail?: string | null;
+            /**
+             * Images
+             * @description List of URLs or paths for the product images
+             */
+            images?: string[] | null;
         };
         /** UserCreate */
         UserCreate: {
@@ -1264,14 +1238,11 @@ export interface components {
             /** @default customer */
             role: components["schemas"]["UserRoles"];
         };
-        /** UserLoginResponse */
-        UserLoginResponse: {
+        /** UserLoginLogoutResponse */
+        UserLoginLogoutResponse: {
             /** Access Token */
             access_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
+            /** Token Type */
             token_type: string;
         };
         /** UserRead */
@@ -1358,7 +1329,7 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1379,7 +1350,9 @@ export interface operations {
     };
     login_user_api_v1_users_login_post: {
         parameters: {
-            query?: never;
+            query?: {
+                set_cookie?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1396,7 +1369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserLoginResponse"];
+                    "application/json": components["schemas"]["UserLoginLogoutResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1406,6 +1379,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_user_api_v1_users_logout_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserLoginLogoutResponse"];
                 };
             };
         };
@@ -1463,40 +1456,13 @@ export interface operations {
             };
         };
     };
-    get_address_api_v1_address_get_by_id__id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AddressResponseModel"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_all_address_api_v1_address_get_all_get: {
         parameters: {
-            query?: never;
+            query?: {
+                address_id?: number | null;
+                page?: number;
+                page_size?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1509,7 +1475,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AllAddressResponseModel"];
+                    "application/json": components["schemas"]["PaginatedResponse_AddressResponseModel_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1613,9 +1588,14 @@ export interface operations {
             };
         };
     };
-    get_all_roles_api_v1_role_get_all_get: {
+    get_all_roles_api_v1_role_get: {
         parameters: {
-            query?: never;
+            query?: {
+                role_id?: number;
+                include_permissions?: boolean;
+                page?: number;
+                page_size?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1629,28 +1609,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AllRolesResponseModel"];
-                };
-            };
-        };
-    };
-    get_role_by_id_api_v1_role_get_by_id__id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RoleResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1763,9 +1721,13 @@ export interface operations {
             };
         };
     };
-    get_all_permissions_api_v1_permission_get_all_get: {
+    get_all_permissions_api_v1_permission_get: {
         parameters: {
-            query?: never;
+            query?: {
+                permission_id?: number | null;
+                page?: number;
+                page_size?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1779,28 +1741,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AllPermissionsResponseModel"];
-                };
-            };
-        };
-    };
-    get_permission_by_id_api_v1_permission_get_by_id__id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PermissionResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -2108,77 +2048,28 @@ export interface operations {
             };
         };
     };
-    get_product_by_id_api_v1_product_get_by_id__id__get: {
+    get_products_api_v1_product_get: {
         parameters: {
             query?: {
-                page?: number;
-                page_size?: number;
-            };
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedResponse_ProductResponseModel_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_product_by_category_id_api_v1_product_get_by_category_id_get: {
-        parameters: {
-            query: {
-                category_id: number;
-                page?: number;
-                page_size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedResponse_ProductResponseModel_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_product_by_sub_category_id_api_v1_product_get_by_subcategory_id_get: {
-        parameters: {
-            query: {
-                sub_category_id: number;
+                id?: number | null;
+                name?: string | null;
+                slug?: string | null;
+                min_price?: number | string | null;
+                max_price?: number | string | null;
+                min_discount?: number | string | null;
+                max_discount?: number | string | null;
+                min_tax?: number | string | null;
+                max_tax?: number | string | null;
+                min_stock?: number | null;
+                max_stock?: number | null;
+                category_id?: number | null;
+                sub_category_id?: number | null;
+                tags?: string | null;
+                is_active?: boolean | null;
+                has_thumbnail?: boolean | null;
+                has_images?: boolean | null;
+                sort_by?: ("id" | "name" | "slug" | "price" | "discount" | "tax" | "stock" | "created_at") | null;
+                sort_order?: ("asc" | "desc") | null;
                 page?: number;
                 page_size?: number;
             };
@@ -2307,13 +2198,16 @@ export interface operations {
             };
         };
     };
-    get_cart_api_v1_cart_get_by_id__id__get: {
+    get_all_carts_api_v1_cart_get: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
+            query?: {
+                cart_id?: number;
+                get_items?: boolean;
+                page?: number;
+                page_size?: number;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -2324,7 +2218,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SingleCartResponseModel"];
+                    "application/json": components["schemas"]["PaginatedResponse_CartsResponseModel_"];
                 };
             };
             /** @description Validation Error */
@@ -2338,33 +2232,13 @@ export interface operations {
             };
         };
     };
-    get_all_carts_api_v1_cart_get_all_get: {
+    delete_cart_api_v1_cart_delete: {
         parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AllCartsResponseModel"];
-                };
-            };
-        };
-    };
-    delete_cart_api_v1_cart__id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
                 id: number;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;

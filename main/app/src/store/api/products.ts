@@ -7,16 +7,11 @@ export const productApi = createApi({
   reducerPath: "productApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "",
-    // headers: {
-    //   Authorization: `Bearer ${localStorage.getItem("token")}`,
-    // },
   }),
   endpoints: (builder) => ({
     getProductsByCategory: builder.query({
-      query: (
-        params: operations["get_product_by_category_id_api_v1_product_get_by_category_id_get"]["parameters"]["query"]
-      ) => {
-        return { url: API_ENDPOINTS.getProductsByCategory, params };
+      query: (params: operations["get_products_api_v1_product_get"]["parameters"]["query"]) => {
+        return { url: API_ENDPOINTS.getProducts, params };
       },
     }),
   }),

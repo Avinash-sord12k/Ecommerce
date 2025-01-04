@@ -3,6 +3,9 @@ from sqlalchemy.orm import relationship
 
 from app.config import Base
 from app.subcategories.schema import product_subcategory_association
+from sqlalchemy.dialects.postgresql import (
+    ARRAY,
+)  # Use ARRAY type for PostgreSQL
 
 
 class Product(Base):
@@ -20,6 +23,14 @@ class Product(Base):
     stock = Column(Integer, nullable=False, default=0)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+
+    # New fields for images
+    thumbnail = Column(
+        String(255), nullable=True
+    )  # Stores the URL or path to the thumbnail
+    images = Column(
+        ARRAY(String), nullable=True
+    )  # Stores an array of image URLs/paths
 
     # One-to-many relationship with User
     user = relationship("User", back_populates="products")

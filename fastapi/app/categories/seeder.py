@@ -1,5 +1,5 @@
+import httpx
 from loguru import logger
-
 from app.exceptions import EntityIntegrityError
 from app.categories.repository import ProductCategoryRepository
 from app.categories.models import CategoryCreateModel
@@ -8,56 +8,52 @@ from app.categories.schema import Category as ProductCategory
 
 class Seeder(object):
     TABLE_NAME = ProductCategory.__tablename__
-    VALUES = [
-        CategoryCreateModel(
-            name="Electronics",
-            description="Electronic devices and gadgets",
-            slug="electronics",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Clothing",
-            description="Fashion and apparel items",
-            slug="clothing",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Books",
-            description="Books, ebooks and publications",
-            slug="books",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Home & Garden",
-            description="Home decor, furniture and garden supplies",
-            slug="home-garden",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Sports & Outdoors",
-            description="Sporting goods and outdoor equipment",
-            slug="sports-outdoors",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Beauty & Health",
-            description="Beauty products and health supplies",
-            slug="beauty-health",
-            is_active=True,
-        ),
-        CategoryCreateModel(
-            name="Toys & Games",
-            description="Toys, games and entertainment items",
-            slug="toys-games",
-            is_active=True,
-        ),
-    ]
+    API_URL = "https://dummyjson.com/products/categories"
+
+    @staticmethod
+    async def fetch_categories() -> list:
+        """
+        Fetch categories from the dummy API and filter the data.
+        """
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(Seeder.API_URL)
+                response.raise_for_status()
+                data = response.json()
+
+                # Transform the response into a list of CategoryCreateModel instances
+                categories = [
+                    CategoryCreateModel(
+                        name=category["name"],
+                        slug=category["slug"],
+                        description=f"Products in the {category['name']} category",
+                        is_active=True,
+                    )
+                    for category in data
+                ]
+                logger.info("Fetched and transformed categories from the API")
+                return categories
+            except httpx.RequestError as e:
+                logger.error(f"HTTP error while fetching categories: {str(e)}")
+                raise
+            except Exception as e:
+                logger.error(
+                    f"Error processing the fetched categories: {str(e)}"
+                )
+                raise
 
     @staticmethod
     async def run():
         """Run the category seeder"""
         repo = ProductCategoryRepository()
-        for value in Seeder.VALUES:
+        try:
+            # Fetch and filter category data
+            categories = await Seeder.fetch_categories()
+        except Exception as e:
+            logger.error(f"Failed to fetch categories: {str(e)}")
+            return
+
+        for value in categories:
             try:
                 await repo.create(value)
                 logger.info(f"Created category: {value.name}")

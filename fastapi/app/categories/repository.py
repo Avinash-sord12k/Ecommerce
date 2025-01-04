@@ -1,6 +1,6 @@
 from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy import func
 from app.categories.models import (
     AllCategoriesResponseModel,
     CategoryCreateModel,
@@ -36,6 +36,22 @@ class ProductCategoryRepository:
             category = result.fetchone()
             if category is None:
                 raise EntityNotFoundError(entity="Category")
+
+            return category._asdict()
+
+    async def get_by_name(self, name: str) -> Category:
+        async with self.db.engine.begin() as connection:
+            result = await connection.execute(
+                select(Category).where(
+                    func.lower(Category.name) == func.lower(name)
+                )
+            )
+            category = result.fetchone()
+            if category is None:
+                raise EntityNotFoundError(
+                    entity="Category",
+                    message=f"Category with name '{name}' not found.",
+                )
 
             return category._asdict()
 

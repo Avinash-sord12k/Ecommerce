@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal, Optional, List
 
 from pydantic import (
     BaseModel,
@@ -47,6 +47,14 @@ class BaseProductModel(BaseModel):
     )
     is_active: bool = Field(
         True, description="Indicates if the product is active"
+    )
+
+    # New fields
+    thumbnail: Optional[str] = Field(
+        None, max_length=255, description="URL or path of the thumbnail image"
+    )
+    images: Optional[List[str]] = Field(
+        None, description="List of URLs or paths for the product images"
     )
 
     @field_serializer("price", "discount", "tax")
@@ -99,6 +107,14 @@ class ProductQueryParams(BaseModel):
     # Other filters
     tags: Optional[str] = Field(None, max_length=255)
     is_active: Optional[bool] = None
+
+    # New fields for image-based filtering
+    has_thumbnail: Optional[bool] = Field(
+        None, description="Filter products with or without a thumbnail"
+    )
+    has_images: Optional[bool] = Field(
+        None, description="Filter products with or without images"
+    )
 
     # Sorting
     sort_by: Optional[
