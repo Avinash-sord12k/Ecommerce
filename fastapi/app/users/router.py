@@ -94,7 +94,16 @@ async def login_user(
         # Set HTTP-only cookie with the token
         response.set_cookie(
             key="access_token",
-            value=f"Bearer {token}",
+            value=token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=3600,
+            path="/",
+        )
+        response.set_cookie(
+            key="token_type",
+            value="Bearer",
             httponly=True,
             secure=True,
             samesite="lax",
