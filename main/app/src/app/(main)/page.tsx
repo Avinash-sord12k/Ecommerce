@@ -1,7 +1,7 @@
 import ProductGroup from "@/components/pages/home/ProductGroup";
 import { operations } from "@/schema";
 import { API_ENDPOINTS } from "@/store/api/config";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 
 export interface HomePageStructure {

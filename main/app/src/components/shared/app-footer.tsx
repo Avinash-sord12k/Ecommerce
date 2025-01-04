@@ -1,10 +1,8 @@
-import { Input } from "@/components/ui/input";
+import { AppMetaData } from "@/app/global/data";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Facebook, InstagramIcon, LinkedinIcon, TwitterIcon } from "lucide-react";
-import { AppMetaData } from "@/app/global/data";
-import { NavLinks } from "./app-topbar";
 import { JSX } from "react";
+import { NavLinks } from "./app-topbar";
 
 export default function AppFooter({
   navlinks,
@@ -16,8 +14,10 @@ export default function AppFooter({
   logoText: string;
 }) {
   return (
-    <>
-      {/* <section className="w-full py-8 md:py-12 lg:py-16 dark:bg-zinc-900 bg-zinc-100">
+    console.log(navlinks),
+    (
+      <>
+        {/* <section className="w-full py-8 md:py-12 lg:py-16 dark:bg-zinc-900 bg-zinc-100">
         <div className="container mx-auto px-4 md:px-6 flex flex-col items-center text-center">
           <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl/none dark:text-zinc-100 text-zinc-800">
             Stay Connected
@@ -68,80 +68,81 @@ export default function AppFooter({
         </div>
       </footer> */}
 
-      <footer className="bg-[#f5f5f5] py-12">
-        <div className="container mx-auto px-4 lg:px-6 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="col-span-1 flex flex-col items-start lg:items-start">
-              <div className="flex items-center space-x-2">
-                <LogoIcon className="w-8 h-8 text-black" />
-                <span className="text-lg font-bold">{logoText}</span>
+        <footer className="bg-[#f5f5f5] py-12">
+          <div className="container mx-auto px-4 lg:px-6 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="col-span-1 flex flex-col items-start lg:items-start">
+                <div className="flex items-center space-x-2">
+                  <LogoIcon className="w-8 h-8 text-black" />
+                  <span className="text-lg font-bold">{logoText}</span>
+                </div>
+                <p className="text-gray-600 mt-2">
+                  Making the world a better place through constructing elegant hierarchies for maximum code reuse and
+                  extensibility.
+                </p>
               </div>
-              <p className="text-gray-600 mt-2">
-                Making the world a better place through constructing elegant hierarchies for maximum code reuse and
-                extensibility.
-              </p>
+              <div className="col-span-1 flex flex-col items-start lg:items-end" />
+              <div>
+                <h3 className="text-lg font-bold mb-3">Quick Links</h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      Home
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      Services
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      Contact
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold mb-3">Legal</h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#" prefetch={false}>
+                      Terms of Service
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="col-span-1 flex flex-col items-start lg:items-end" />
-            <div>
-              <h3 className="text-lg font-bold mb-3">Quick Links</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link href="#" prefetch={false}>
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" prefetch={false}>
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" prefetch={false}>
-                    Services
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" prefetch={false}>
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold mb-3">Legal</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link href="#" prefetch={false}>
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" prefetch={false}>
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
+            <hr className="mt-8" />
+            <div className="flex items-center justify-between mt-8">
+              <div className=" space-y-2">
+                <div className="flex items-center space-x-2">
+                  <LogoIcon className="w-6 h-6 text-black" />
+                  <span className="text-lg font-bold">{logoText}</span>
+                </div>
+                <p>
+                  &copy; {new Date().getFullYear()} {AppMetaData.title}. All rights reserved.
+                </p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="link">Facebook</Button>
+                <Button variant="link">Twitter</Button>
+                <Button variant="link">Instagram</Button>
+              </div>
             </div>
           </div>
-          <hr className="mt-8" />
-          <div className="flex items-center justify-between mt-8">
-            <div className=" space-y-2">
-              <div className="flex items-center space-x-2">
-                <LogoIcon className="w-6 h-6 text-black" />
-                <span className="text-lg font-bold">{logoText}</span>
-              </div>
-              <p>
-                &copy; {new Date().getFullYear()} {AppMetaData.title}. All rights reserved.
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="link">Facebook</Button>
-              <Button variant="link">Twitter</Button>
-              <Button variant="link">Instagram</Button>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </>
+        </footer>
+      </>
+    )
   );
 }

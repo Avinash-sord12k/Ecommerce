@@ -32,7 +32,10 @@ export default function CheckoutPage() {
             {cartData?.length > 0 ? (
               cartData?.map((singleItem, idx) => {
                 return (
-                  <div className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-950">
+                  <div
+                    key={idx}
+                    className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-950"
+                  >
                     <img
                       src={singleItem.product.thumbnail ?? singleItem.product.images?.[0] ?? "/images/vase_cropped.jpg"}
                       width={80}
