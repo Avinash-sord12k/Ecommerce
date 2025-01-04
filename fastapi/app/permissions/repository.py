@@ -1,5 +1,5 @@
 from loguru import logger
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, func, insert, select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DatabaseManager
@@ -9,11 +9,13 @@ from app.permissions.models import (
     PermissionResponseModel,
 )
 from app.permissions.schema import Permission
+from app.repository import BaseRepository
 
 
-class PermissionRepository:
+class PermissionRepository(BaseRepository):
     def __init__(self) -> None:
         self.db = DatabaseManager._instance
+        super().__init__(self.db)
 
     async def create(
         self, permission: PermissionCreateModel
@@ -39,22 +41,38 @@ class PermissionRepository:
                 logger.error(f"Error creating permission: {e=}")
                 raise e
 
-    async def get_all(self) -> list[dict]:
-        async with self.db.engine.begin() as connection:
-            result = await connection.execute(select(Permission))
-            permissions = result.fetchall()
-            return [
-                PermissionResponseModel(
-                    id=permission.id,
-                    name=permission.name,
-                    description=permission.description,
-                ).model_dump()
-                for permission in permissions
-            ]
+    async def get_all(
+        self,
+        permission_id: int | None = None,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> tuple[list[dict], int]:
+        query = select(Permission)
+        if permission_id is not None:
+            query = query.where(Permission.id == permission_id)
+            async with self.db.engine.begin() as connection:
+                result = await connection.execute(query)
+                if not result.fetchone():
+                    raise EntityNotFoundError(entity="Permission")
 
-    async def get_by_id(self, id: int) -> PermissionResponseModel:
+        items, total = await self.get_paginated(query, page, page_size)
+
+        return [
+            PermissionResponseModel(
+                id=item["id"],
+                name=item["name"],
+                description=item["description"],
+            ).model_dump()
+            for item in items
+        ], total
+
+    async def get(self, id: int = None) -> PermissionResponseModel:
         async with self.db.engine.begin() as connection:
-            q = select(Permission).where(Permission.id == id)
+            if id is None:
+                q = select(Permission).order_by(func.random()).limit(1)
+            else:
+                q = select(Permission).where(Permission.id == id)
+
             result = await connection.execute(q)
             permission = result.fetchone()
             if not permission:
