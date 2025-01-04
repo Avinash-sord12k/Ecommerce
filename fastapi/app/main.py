@@ -22,6 +22,8 @@ from app.roles.seeder import Seeder as RoleSeeder
 from app.subcategories.router import router as subcategory_router
 from app.users.router import router as users_router
 from app.users.seeder import Seeder as UserSeeder
+from app.products.seeder import Seeder as ProductSeeder
+from app.categories.seeder import Seeder as CategorySeeder
 
 
 @asynccontextmanager
@@ -35,6 +37,8 @@ async def lifespan(app):
     await PermissionSeeder().run()
     await RoleSeeder().run()
     await UserSeeder().run()
+    await ProductSeeder().run()
+    await CategorySeeder().run()
 
     os.makedirs(SHARED_FOLDER, exist_ok=True)
     yield

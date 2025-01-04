@@ -9,7 +9,7 @@ export const NavLinks = [
   },
   {
     title: "All Products",
-    url: getFullUrl("/inbox"),
+    url: getFullUrl("/products"),
     icon: Inbox,
   },
 ];
