@@ -10,6 +10,7 @@ from starlette.status import (
 )
 
 from app.exceptions import EntityIntegrityError, EntityNotFoundError
+from app.models import PaginationParams
 from app.permissions.models import (
     AllPermissionsResponseModel,
     PermissionCreateModel,
@@ -49,7 +50,7 @@ async def create_permission(permission: PermissionCreateModel):
 
 
 @router.get(
-    "/get-all",
+    "",
     response_model=AllPermissionsResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
@@ -61,38 +62,31 @@ async def create_permission(permission: PermissionCreateModel):
         ]
     },
 )
-async def get_all_permissions():
+async def get_all_permissions(
+    permission_id: int | None = None, pagination: PaginationParams = Depends()
+):
     try:
         repo = PermissionRepository()
-        all_permissions = await repo.get_all()
-        return JSONResponse(content=all_permissions, status_code=HTTP_200_OK)
-    except Exception as e:
-        logger.error(f"Error getting all permissions: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
+        permissions, total = await repo.get_all(
+            permission_id=permission_id,
+            page=pagination.page,
+            page_size=pagination.page_size,
+        )
 
+        response = {
+            "items": permissions,
+            "total": total,
+            "page": pagination.page,
+            "page_size": pagination.page_size,
+            "total_pages": (total + pagination.page_size - 1)
+            // pagination.page_size,
+        }
 
-@router.get(
-    "/get-by-id/{id}",
-    response_model=PermissionResponseModel,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(allowed_permissions(["read_permission"])),
-    ],
-    openapi_extra={
-        "security": [
-            {"cookieAuth": [], "oauth2Auth": []},
-        ]
-    },
-)
-async def get_permission_by_id(id: int):
-    try:
-        repo = PermissionRepository()
-        permission = await repo.get_by_id(id)
-        return JSONResponse(content=permission, status_code=HTTP_200_OK)
+        return JSONResponse(content=response, status_code=HTTP_200_OK)
     except EntityNotFoundError as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting permission by id: {e=}")
+        logger.error(f"Error getting all permissions: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 

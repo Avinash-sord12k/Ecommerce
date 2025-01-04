@@ -2,8 +2,12 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models import PaginatedResponse
 
-class RoleCreateModel(BaseModel):
+
+class RoleBase(BaseModel):
+    """Base Role model with common fields and validations"""
+
     name: str = Field(
         ..., min_length=3, max_length=50, description="Name of the role"
     )
@@ -13,12 +17,22 @@ class RoleCreateModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RoleResponseModel(BaseModel):
+class RoleCreateModel(RoleBase):
+    pass
+
+
+class RoleResponseModel(RoleBase):
     id: int = Field(..., description="ID of the role")
-    name: str = Field(
-        ..., min_length=3, max_length=50, description="Name of the role"
+    permissions: Optional[list[str]] = Field(
+        None, description="List of permission names"
     )
-    description: str = Field(
+
+
+class RoleUpdateModel(BaseModel):
+    name: Optional[str] = Field(
+        None, min_length=3, max_length=50, description="Name of the role"
+    )
+    description: Optional[str] = Field(
         None, max_length=255, description="Description of the role"
     )
     permissions: Optional[list[str]] = Field(
@@ -27,22 +41,5 @@ class RoleResponseModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RoleUpdateModel(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    permissions: Optional[list[str]] = None
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AllRolesResponseModel(BaseModel):
-    class MinimalRoleResponseModel(BaseModel):
-        id: int = Field(..., description="ID of the role")
-        name: str = Field(
-            ..., min_length=3, max_length=50, description="Name of the role"
-        )
-        description: str = Field(
-            None, max_length=255, description="Description of the role"
-        )
-        model_config = ConfigDict(from_attributes=True)
-
-    roles: list[MinimalRoleResponseModel]
+class AllRolesResponseModel(PaginatedResponse):
+    items: list[RoleResponseModel]

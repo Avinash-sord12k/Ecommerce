@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -15,6 +17,7 @@ from app.exceptions import (
     EntityNotFoundError,
     NotEnoughPermissionsError,
 )
+from app.models import PaginationParams
 from app.permissions.utils import allowed_permissions
 from app.roles.models import (
     AllRolesResponseModel,
@@ -54,52 +57,35 @@ async def create_role(role: RoleCreateModel):
 
 
 @router.get(
-    "/get-all",
+    "",
     response_model=AllRolesResponseModel,
     status_code=HTTP_200_OK,
     dependencies=[
         Depends(allowed_permissions(["read_role"])),
     ],
-    description="Get all roles with their basic information",
+    description="Get all roles with pagination and optional role ID filter",
     openapi_extra={
         "security": [
             {"cookieAuth": [], "oauth2Auth": []},
         ]
     },
 )
-async def get_all_roles():
+async def get_all_roles(
+    role_id: int = None,
+    include_permissions: bool = False,
+    pagination: PaginationParams = Depends(),
+):
     try:
         repo = RoleRepository()
-        all_roles = await repo.get_all()
+        all_roles = await repo.get_all(
+            page=pagination.page,
+            page_size=pagination.page_size,
+            role_id=role_id,
+            include_permissions=include_permissions,
+        )
         return JSONResponse(content=all_roles, status_code=HTTP_200_OK)
     except Exception as e:
         logger.error(f"Error getting all roles: {e=}")
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@router.get(
-    "/get-by-id/{id}",
-    response_model=RoleResponseModel,
-    status_code=HTTP_200_OK,
-    dependencies=[
-        Depends(allowed_permissions(["read_role"])),
-    ],
-    description="Get a role by ID including its permissions",
-    openapi_extra={
-        "security": [
-            {"cookieAuth": [], "oauth2Auth": []},
-        ]
-    },
-)
-async def get_role_by_id(id: int):
-    try:
-        repo = RoleRepository()
-        role = await repo.get_by_id(id)
-        return JSONResponse(content=role, status_code=HTTP_200_OK)
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error getting role by id: {e=}")
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
