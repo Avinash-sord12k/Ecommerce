@@ -7,6 +7,7 @@ from pydantic import (
     Field,
     computed_field,
     field_serializer,
+    field_validator,
 )
 
 
@@ -85,6 +86,7 @@ class ProductQueryParams(BaseModel):
 
     # Basic fields
     id: Optional[int] = None
+    ids: Optional[str] = None
     name: Optional[str] = Field(None, min_length=3, max_length=100)
     slug: Optional[str] = Field(None, min_length=3, max_length=60)
 
@@ -136,3 +138,12 @@ class ProductQueryParams(BaseModel):
     def to_filter_dict(self) -> dict:
         """Convert the model to a dictionary of non-None values"""
         return {k: v for k, v in self.model_dump().items() if v is not None}
+
+    @field_validator("ids")
+    def validate_ids(cls, v: str) -> List[int]:
+        if v is None:
+            return None
+        try:
+            return [int(id_) for id_ in v.split(",")]
+        except Exception:
+            raise ValueError("Invalid IDs format")

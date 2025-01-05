@@ -6,6 +6,7 @@ import { authApi } from "./api/auth";
 import cartReducer from "./slices/cart";
 import storage from "redux-persist/lib/storage";
 import { setupListeners } from "@reduxjs/toolkit/query";
+import { cartApi } from "./api/cart";
 
 const persistConfigCart = {
   key: "cart",
@@ -20,6 +21,7 @@ export const store = configureStore({
   reducer: {
     [productApi.reducerPath]: productApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
+    [cartApi.reducerPath]: cartApi.reducer,
     cart: persistedCartReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -29,7 +31,8 @@ export const store = configureStore({
       },
     })
       .concat(productApi.middleware)
-      .concat(authApi.middleware),
+      .concat(authApi.middleware)
+      .concat(cartApi.middleware),
 });
 
 const persistor = persistStore(store);

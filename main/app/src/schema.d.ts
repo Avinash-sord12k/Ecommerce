@@ -2052,6 +2052,7 @@ export interface operations {
         parameters: {
             query?: {
                 id?: number | null;
+                ids?: string | null;
                 name?: string | null;
                 slug?: string | null;
                 min_price?: number | string | null;

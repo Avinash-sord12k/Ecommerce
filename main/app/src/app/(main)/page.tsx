@@ -11,8 +11,7 @@ export interface HomePageStructure {
   query: operations["get_products_api_v1_product_get"]["parameters"]["query"];
 }
 
-export type ProductResponse =
-  operations["get_products_api_v1_product_get"]["responses"]["200"]["content"]["application/json"];
+export type ProductResponse = operations["get_products_api_v1_product_get"]["responses"]["200"]["content"]["application/json"];
 
 const pageStructure: HomePageStructure[] = [
   {
@@ -74,6 +73,7 @@ async function getProducts(structure: HomePageStructure): Promise<ProductRespons
     return res.json();
   });
 
+  console.log("🚀 ~ getProducts ~ products:", products);
   return products;
 }
 
@@ -94,9 +94,7 @@ export default async function Home() {
     <main>
       <section className="bg-black py-32">
         <div className=" mx-auto container w-full">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-white text-center mb-3">
-            Spring Collection
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-white text-center mb-3">Spring Collection</h1>
           <p className="max-w-[600px] mx-auto text-center text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
             Introducing our vibrant and stylish spring collection. Find the perfect outfit for the season.
           </p>
@@ -106,14 +104,7 @@ export default async function Home() {
       {PageData?.map(
         (data) =>
           data?.products && (
-            <ProductGroup
-              key={data.id}
-              id={data.id}
-              query={data.query}
-              title={data.title}
-              description={data.description}
-              products={data?.products}
-            />
+            <ProductGroup key={data.id} id={data.id} query={data.query} title={data.title} description={data.description} products={data?.products} />
           )
       )}
     </main>

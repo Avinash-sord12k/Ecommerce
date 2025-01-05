@@ -4,8 +4,8 @@ import { SpecificProduct } from "@/app/(main)/products/[slug]/page";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAppDispatch } from "@/store/hooks";
-import { addToCart } from "@/store/slices/cart";
+import { useAddItemsMutation } from "@/store/api/cart";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,23 +14,24 @@ export const ProductDetailsForm = ({ product }: { product: SpecificProduct }) =>
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const handleClick = () => {
-    dispatch(
-      addToCart({
-        product,
-        quantity,
-      })
-    );
-    toast("Product add to cart", {
-      description: `${quantity > 1 ? `${quantity} units of ` : ""}${product.name} has been added to your cart.`,
-      action: {
-        label: "View Cart",
-        onClick: () => {
-          // Navigate to cart page
-          router.push("/checkout");
+  const currentCartId = useAppSelector((state) => state.cart.defaultCart.id);
+  const [addToCart, { isLoading: isAddingToCart }] = useAddItemsMutation();
+  const handleClick = async () => {
+    try {
+      await addToCart({ product_id: product.id, quantity, cart_id: currentCartId }).unwrap();
+      toast("Product add to cart", {
+        description: `${quantity > 1 ? `${quantity} units of ` : ""}${product.name} has been added to your cart.`,
+        action: {
+          label: "View Cart",
+          onClick: () => {
+            router.push("/checkout");
+          },
         },
-      },
-    });
+      });
+    } catch (error: any) {
+      console.error("An error occurred: ", error);
+      toast.error(`An error occurred. ${error?.data?.detail}`);
+    }
   };
 
   return (

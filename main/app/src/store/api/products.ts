@@ -9,12 +9,15 @@ export const productApi = createApi({
     baseUrl: "",
   }),
   endpoints: (builder) => ({
-    getProductsByCategory: builder.query({
-      query: (params: operations["get_products_api_v1_product_get"]["parameters"]["query"]) => {
+    getProducts: builder.query<
+      operations["get_products_api_v1_product_get"]["responses"]["200"]["content"]["application/json"],
+      operations["get_products_api_v1_product_get"]["parameters"]["query"]
+    >({
+      query: (params) => {
         return { url: API_ENDPOINTS.getProducts, params };
       },
     }),
   }),
 });
 
-export const { useGetProductsByCategoryQuery } = productApi;
+export const { useGetProductsQuery } = productApi;

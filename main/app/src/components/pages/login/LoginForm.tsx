@@ -12,17 +12,14 @@ import { toast, Toaster } from "sonner";
 import * as z from "zod";
 
 type LoginType = operations["login_user_api_v1_users_login_post"];
-type RequestObject =
-  LoginType["requestBody"]["content"]["application/x-www-form-urlencoded"];
+type RequestObject = LoginType["requestBody"]["content"]["application/x-www-form-urlencoded"];
 
 const PasswordMinLength = 6;
 
 const loginSchema = z.object({
   grant_type: z.literal("password"),
   username: z.string().nonempty("Username is required."),
-  password: z
-    .string()
-    .min(PasswordMinLength, "Password must be at least 6 characters long."),
+  password: z.string().min(PasswordMinLength, "Password must be at least 6 characters long."),
   scope: z.string().optional(), // Optional field
   client_id: z.string().optional(), // Optional field
   client_secret: z.string().optional(), // Optional field
@@ -60,7 +57,7 @@ function LoginForm() {
         })
         .catch((error) => {
           console.error("An error occurred: ", error);
-          toast.error("An error occurred. Please try again.", {
+          toast.error(`An error occurred. ${error?.data?.detail}`, {
             action: (
               <Button
                 type="button"
@@ -93,13 +90,10 @@ function LoginForm() {
             {...register("username")}
             className={cva({
               "border-red-500": formState.errors.username,
-              "border-green-500":
-                formState.dirtyFields.username && !formState.errors.username,
+              "border-green-500": formState.dirtyFields.username && !formState.errors.username,
             })()}
           />
-          <p className="text-sm text-gray-500">
-            We&apos;ll never share your email with anyone else.
-          </p>
+          <p className="text-sm text-gray-500">We&apos;ll never share your email with anyone else.</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -110,13 +104,10 @@ function LoginForm() {
             {...register("password")}
             className={cva({
               "border-red-500": formState.errors.password,
-              "border-green-500":
-                formState.dirtyFields.password && !formState.errors.password,
+              "border-green-500": formState.dirtyFields.password && !formState.errors.password,
             })()}
           />
-          <p className="text-sm text-gray-500">
-            Passwords must be at least {PasswordMinLength} characters.
-          </p>
+          <p className="text-sm text-gray-500">Passwords must be at least {PasswordMinLength} characters.</p>
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
           Login

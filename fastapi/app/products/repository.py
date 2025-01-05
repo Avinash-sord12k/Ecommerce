@@ -67,6 +67,7 @@ class ProductRepository(BaseRepository):
 
         filter_mappings = {
             "id": lambda v: Product.id == v,
+            "ids": lambda v: Product.id.in_(v),
             "name": lambda v: Product.name.ilike(f"%{v}%"),
             "slug": lambda v: Product.slug == v,
             "min_price": lambda v: Product.price >= v,

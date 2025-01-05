@@ -12,6 +12,11 @@ export const NavLinks = [
     url: getFullUrl("/products"),
     icon: Inbox,
   },
+  {
+    title: "Cart",
+    url: getFullUrl("/checkout"),
+    icon: Inbox,
+  },
 ];
 
 export const AppMetaData = {

@@ -19,13 +19,34 @@ export const authApi = createApi({
       query: (body: FormData) => {
         return {
           url: API_ENDPOINTS.login,
-          params: {set_cookie: true},
+          params: { set_cookie: true },
           method: "POST",
           body,
+        };
+      },
+    }),
+    session: builder.query<
+      operations["get_user_me_api_v1_users_me_get"]["responses"]["200"]["content"]["application/json"],
+      void
+    >({
+      query: () => {
+        return {
+          url: API_ENDPOINTS.me,
+        };
+      },
+    }),
+    logout: builder.mutation<
+      operations["logout_user_api_v1_users_logout_get"]["responses"]["200"]["content"]["application/json"],
+      void
+    >({
+      query: () => {
+        return {
+          url: API_ENDPOINTS.logout,
+          method: "POST",
         };
       },
     }),
   }),
 });
 
-export const { useLoginMutation } = authApi;
+export const { useLoginMutation, useSessionQuery, useLogoutMutation } = authApi;
